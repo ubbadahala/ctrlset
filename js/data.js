@@ -295,7 +295,7 @@ async function addCustomExercise() {
   if (exists) return toast('Exercise already exists!');
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('exercises')
       .insert({ user_id: currentUser.id, name: val, muscle_group: muscleInput.value })
       .select().single();
@@ -428,7 +428,7 @@ async function saveRecovery() {
       entry.id = existing.id; // Include ID to force an update on upsert
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('recovery_logs')
       .upsert(entry, { onConflict: 'user_id, log_date' }) // Assumes a unique constraint on user_id + log_date
       .select()
