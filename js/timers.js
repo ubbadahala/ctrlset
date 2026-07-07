@@ -231,6 +231,20 @@ function checkAndRestoreDraft() {
         document.getElementById('sessionToggleBtn').classList.add('running');
         document.getElementById('fabEndSession').style.display = 'block';
 
+        // Re-run once now (covers the case workouts already loaded) and again
+        // once cloud sync finishes, so it works regardless of load order.
+        updateLastSessionInfo(draft.name || '');
+        document.addEventListener('ctrlset:workoutsLoaded', () => {
+          updateLastSessionInfo(document.getElementById('wName').value.trim());
+          document.querySelectorAll('.exercise-block').forEach(block => {
+            const bid = block.id.replace('exb-', '');
+            block.querySelectorAll('.load-row').forEach(row => {
+              const lid = row.id.split('-')[2];
+              updateDeltaLoad(bid, lid);
+            });
+          });
+        }, { once: true });
+
         sessionClockInterval = setInterval(() => {
           const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
           const m = Math.floor(elapsed / 60).toString().padStart(2, '0');

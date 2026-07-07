@@ -84,6 +84,4 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('confirmOverlay').addEventListener('click', e => {
     if (e.target.id === 'confirmOverlay') dismissConfirm();
   });
-
-  checkAndRestoreDraft();
 });

@@ -134,6 +134,10 @@ async function syncDataFromSupabase() {
     renderExerciseDB();
     toast("Sync complete! ✅");
 
+    // Let anything that rendered before `workouts` was populated
+    // (e.g. a restored draft's last-session bar / live deltas) recompute now.
+    document.dispatchEvent(new CustomEvent('ctrlset:workoutsLoaded'));
+
   } catch (error) {
     console.error("Sync failed:", error);
     toast("Failed to sync data. Check connection.");
