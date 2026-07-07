@@ -5,7 +5,7 @@ function exportJSON() {
 
   // Create a bundle of all user data including the latest features
   const backupData = {
-    version: "4.0", // v4: added restDays, weeklyTarget, and lightMode
+    version: "4.1", // v4.1: restDays entries now include restType (active/complete)
     workouts: workouts,
     recovery: recoveryLogs,
     exercises: exercisesDB,
@@ -126,7 +126,8 @@ async function importJSON() {
         if (imported.restDays && imported.restDays.length > 0) {
           const restsToInsert = imported.restDays.map(rd => ({
             user_id: currentUser.id,
-            rest_date: rd
+            rest_date: typeof rd === 'string' ? rd : rd.date,
+            rest_type: typeof rd === 'string' ? 'complete' : (rd.restType || 'complete')
           }));
           await supabaseClient.from('rest_days').upsert(restsToInsert, { onConflict: 'user_id, rest_date' });
         }
@@ -211,8 +212,10 @@ function exportCSV() {
 
   // ── REST DAYS SECTION ──
   if (restDays.length) {
-    csvContent += "\nREST DAYS\nDate\n";
-    [...restDays].sort().forEach(d => { csvContent += `${d}\n`; });
+    csvContent += "\nREST DAYS\nDate,Type\n";
+    [...restDays].sort((a, b) => a.date.localeCompare(b.date)).forEach(r => {
+      csvContent += `${r.date},${r.restType === 'active' ? 'Active Rest' : 'Complete Rest'}\n`;
+    });
   }
 
   const encodedUri = encodeURI(csvContent);
