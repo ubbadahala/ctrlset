@@ -123,6 +123,13 @@ function switchTab(tab, btn) {
   }
 }
 
+function switchHistorySubTab(subTab) {
+  document.getElementById('historyPanel-workouts').style.display = subTab === 'workouts' ? '' : 'none';
+  document.getElementById('historyPanel-recovery').style.display = subTab === 'recovery' ? '' : 'none';
+  document.getElementById('historyTabBtn-workouts').classList.toggle('active', subTab === 'workouts');
+  document.getElementById('historyTabBtn-recovery').classList.toggle('active', subTab === 'recovery');
+}
+
 let editingWorkoutId = null;
 let editExerciseCount = 0;
 

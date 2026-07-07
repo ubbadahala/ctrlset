@@ -189,27 +189,36 @@
   </div>
 
   <div class="view" id="view-history">
-    <div class="card glass-panel" style="padding:18px 24px; margin-bottom:16px;">
-      <input type="text" id="searchInput" placeholder="Search workouts…" style="margin-bottom:12px;" oninput="renderHistory()">
-      <div class="history-controls">
-        <select id="historyMuscleFilter" onchange="renderHistory()" style="margin-bottom:0;flex:1;min-width:110px;font-size:0.78rem;padding:9px 10px;">
-          <option value="">All muscles</option>
-          <option>Chest</option><option>Back</option><option>Shoulders</option>
-          <option>Arms</option><option>Legs</option><option>Core</option>
-          <option>Full Body</option><option>Cardio</option>
-        </select>
-        <select id="historySortOrder" onchange="renderHistory()" style="margin-bottom:0;flex:1;min-width:110px;font-size:0.78rem;padding:9px 10px;">
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="volume">Highest volume</option>
-        </select>
-      </div>
+    <div class="muscle-tabs" id="historySubTabs">
+      <button class="muscle-tab-btn active" id="historyTabBtn-workouts" onclick="switchHistorySubTab('workouts')">🏋️ Workouts</button>
+      <button class="muscle-tab-btn" id="historyTabBtn-recovery" onclick="switchHistorySubTab('recovery')">💤 Recovery</button>
     </div>
-    <div id="historyList"></div>
 
-    <div class="card glass-panel" style="margin-top:28px;" id="recoveryHistoryCard">
-      <div class="card-title" style="color:var(--green);">Recovery Log History</div>
-      <div id="recoveryHistoryList"></div>
+    <div id="historyPanel-workouts">
+      <div class="card glass-panel" style="padding:18px 24px; margin-bottom:16px;">
+        <input type="text" id="searchInput" placeholder="Search workouts…" style="margin-bottom:12px;" oninput="renderHistory()">
+        <div class="history-controls">
+          <select id="historyMuscleFilter" onchange="renderHistory()" style="margin-bottom:0;flex:1;min-width:110px;font-size:0.78rem;padding:9px 10px;">
+            <option value="">All muscles</option>
+            <option>Chest</option><option>Back</option><option>Shoulders</option>
+            <option>Arms</option><option>Legs</option><option>Core</option>
+            <option>Full Body</option><option>Cardio</option>
+          </select>
+          <select id="historySortOrder" onchange="renderHistory()" style="margin-bottom:0;flex:1;min-width:110px;font-size:0.78rem;padding:9px 10px;">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="volume">Highest volume</option>
+          </select>
+        </div>
+      </div>
+      <div id="historyList"></div>
+    </div>
+
+    <div id="historyPanel-recovery" style="display:none;">
+      <div class="card glass-panel" id="recoveryHistoryCard">
+        <div class="card-title" style="color:var(--green);">Recovery Log History</div>
+        <div id="recoveryHistoryList"></div>
+      </div>
     </div>
   </div>
 
