@@ -564,7 +564,7 @@ async function saveEditedRecovery() {
   const logId = recoveryLogs[idx].id;
 
   try {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('recovery_logs')
       .update({
         log_date: date,
