@@ -18,7 +18,7 @@ function updateStats() {
   animateValue('statVolume', Math.round(totalVol)); // Passing it as an integer, the helper formats it!
 
   // 4. Streak Tracking (Workouts + Rest Days)
-  const activeDates = new Set([...workouts.map(w => w.date), ...restDays]);
+  const activeDates = new Set([...workouts.map(w => w.date), ...restDays.map(r => r.date)]);
   let streak = 0;
   const today = new Date();
   
@@ -83,5 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('confirmOverlay').addEventListener('click', e => {
     if (e.target.id === 'confirmOverlay') dismissConfirm();
+  });
+
+  document.getElementById('restTypeOverlay').addEventListener('click', e => {
+    if (e.target.id === 'restTypeOverlay') dismissRestTypeModal();
   });
 });

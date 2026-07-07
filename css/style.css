@@ -1086,6 +1086,16 @@ input, select, textarea {
     box-shadow: 0 0 10px rgba(100, 180, 255, 0.5); 
   }
 
+  /* ── ACTIVE REST (CARDIO) HEATMAP COLOR ── */
+  .level-rest-active { 
+    background: rgba(255, 165, 90, 0.25); 
+    border: 1px solid rgba(255, 165, 90, 0.4); 
+  }
+  .level-rest-active:hover { 
+    background: rgba(255, 165, 90, 0.4); 
+    box-shadow: 0 0 10px rgba(255, 165, 90, 0.5); 
+  }
+
   /* ── REST DAY HISTORY CARD ── */
   .rest-entry {
     background: rgba(100, 180, 255, 0.05);
@@ -1108,6 +1118,16 @@ input, select, textarea {
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+
+  /* ── ACTIVE REST VARIANT (CARDIO) ── */
+  .rest-entry.active-rest {
+    background: rgba(255, 165, 90, 0.05);
+    border: 1px solid rgba(255, 165, 90, 0.15);
+    border-left: 4px solid #ffa55a;
+  }
+  .rest-entry.active-rest .rest-entry-title {
+    color: #ffa55a;
   }
 
   /* RADAR CHART CONTAINER */
@@ -1680,6 +1700,10 @@ input, select, textarea {
   body.light-mode .heatmap-day.level-rest {
     background: rgba(100, 180, 255, 0.4);
     border-color: rgba(100, 180, 255, 0.6);
+  }
+  body.light-mode .heatmap-day.level-rest-active {
+    background: rgba(230, 120, 30, 0.4);
+    border-color: rgba(230, 120, 30, 0.6);
   }
 
   /* ── WEEKLY TARGET BAR ── */

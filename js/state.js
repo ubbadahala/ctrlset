@@ -91,11 +91,11 @@ async function syncDataFromSupabase() {
     // 3. Fetch Rest Days (And here)
     const { data: restData, error: restErr } = await supabaseClient
       .from('rest_days')
-      .select('rest_date')
+      .select('rest_date, rest_type')
       .eq('user_id', currentUser.id);
       
     if (restErr) throw restErr;
-    restDays = restData.map(r => r.rest_date);
+    restDays = restData.map(r => ({ date: r.rest_date, restType: r.rest_type || 'complete' }));
 
     // 4. Custom Exercises (And here)
     const { data: exData } = await supabaseClient

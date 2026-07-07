@@ -164,18 +164,22 @@ function renderHeatmap() {
       
       const dailyVol = heatmapData[dateStr] || 0;
       let level = 0;
-      
+      let restEntry = null;
+
       if (dailyVol > 0) {
         const ratio = dailyVol / maxVolume;
         if (ratio < 0.25) level = 1;
         else if (ratio < 0.5) level = 2;
         else if (ratio < 0.75) level = 3;
         else level = 4;
-      } else if (restDays.includes(dateStr)) {
-        level = 'rest'; // Triggers the icy blue CSS class
+      } else {
+        restEntry = restDays.find(r => r.date === dateStr);
+        if (restEntry) level = restEntry.restType === 'active' ? 'rest-active' : 'rest';
       }
 
-      const tooltipText = level === 'rest' ? 'Rest Day 🛌' : `${Math.round(dailyVol)}kg`;
+      const tooltipText = level === 'rest' ? 'Complete Rest 🛋️'
+        : level === 'rest-active' ? 'Active Rest 🏃'
+        : `${Math.round(dailyVol)}kg`;
       html += `<div class="heatmap-day level-${level}" title="${formatDate(dateStr)}: ${tooltipText}"></div>`;
     }
     html += '</div>';
