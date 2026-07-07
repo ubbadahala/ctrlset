@@ -114,7 +114,7 @@
 
       <div style="display:flex; flex-direction:column; gap:12px; margin-top:24px; margin-bottom:32px; padding-bottom:24px; border-bottom:1px solid var(--glass-border);">
         <button class="btn-start-session" id="sessionToggleBtn" onclick="toggleSession()" style="margin:0;">▶ Start Session</button>
-        <button class="btn btn-ghost" id="restDayBtn" onclick="logRestDay()" style="width:100%; font-size:0.75rem; padding:12px; margin:0;">🛌 Log Rest Day</button>
+        <button class="btn btn-ghost" id="restDayBtn" onclick="openRestDayModal()" style="width:100%; font-size:0.75rem; padding:12px; margin:0;">🛌 Log Rest Day</button>
       </div>
 
       <label style="margin-top: 8px;">Exercises</label>
@@ -388,7 +388,7 @@
     <div class="card glass-panel" style="margin-bottom:24px;">
       <div class="card-title">Exercises</div>
       <table class="recap-exercise-table" id="recapTable">
-        <thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Wt(kg)</th><th>Vol(kg)</th><th>1RM(kg)</th></tr></thead>
+        <thead><tr><th>Exercise</th><th>Muscle</th><th>Sets</th><th>Reps</th><th>Wt(kg)</th><th>Vol(kg)</th><th>1RM(kg)</th></tr></thead>
         <tbody id="recapTableBody"></tbody>
       </table>
     </div>
@@ -622,6 +622,20 @@
     <div class="confirm-actions">
       <button class="confirm-btn confirm-btn-cancel" id="confirmCancel" onclick="dismissConfirm()">Cancel</button>
       <button class="confirm-btn confirm-btn-ok" id="confirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── REST DAY TYPE DIALOG ── -->
+<div class="confirm-overlay" id="restTypeOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🛌</div>
+    <div class="confirm-title">Log Rest Day</div>
+    <div class="confirm-body">What kind of rest day was it?</div>
+    <div class="confirm-actions" style="display:flex; flex-direction:column; gap:10px;">
+      <button class="confirm-btn confirm-btn-ok" style="width:100%;" onclick="logRestDay('active')">🏃 Active Rest (Cardio, walk, mobility…)</button>
+      <button class="confirm-btn confirm-btn-ok" style="width:100%;" onclick="logRestDay('complete')">🛋️ Complete Rest</button>
+      <button class="confirm-btn confirm-btn-cancel" style="width:100%;" onclick="dismissRestTypeModal()">Cancel</button>
     </div>
   </div>
 </div>

@@ -16,8 +16,8 @@ function renderHistory() {
 
   // 2. Filter Rest Days (Hide them if a specific muscle filter is applied, but keep them for search)
   let filteredRestDays = [];
-  if (!muscleFilter && (!q || 'rest day'.includes(q))) {
-    filteredRestDays = restDays.map(d => ({ type: 'rest', date: d }));
+  if (!muscleFilter && (!q || 'rest day'.includes(q) || 'active rest'.includes(q) || 'cardio'.includes(q))) {
+    filteredRestDays = restDays.map(r => ({ type: 'rest', date: r.date, restType: r.restType || 'complete' }));
   }
 
   // 3. Combine and Sort
@@ -57,9 +57,10 @@ function renderHistory() {
   list.innerHTML = combined.map(item => {
     // ── RENDER REST DAY ──
     if (item.type === 'rest') {
+      const isActive = item.restType === 'active';
       return `
-      <div class="rest-entry glass-panel">
-        <div class="rest-entry-title">🛌 Rest Day</div>
+      <div class="rest-entry glass-panel${isActive ? ' active-rest' : ''}">
+        <div class="rest-entry-title">${isActive ? '🏃 Active Rest' : '🛋️ Complete Rest'}</div>
         <div style="display:flex; align-items:center; gap:16px;">
           <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">${formatDate(item.date)}</span>
           <button class="btn-icon" style="width:32px; height:32px; margin-bottom:0; font-size:0.85rem;" onclick="removeRestDay('${item.date}')" title="Delete Rest Day">✕</button>
@@ -425,18 +426,29 @@ function deleteWorkout(id) {
   });
 }
 
-async function logRestDay() {
+function openRestDayModal() {
+  document.getElementById('restTypeOverlay').classList.add('active');
+}
+
+function dismissRestTypeModal() {
+  document.getElementById('restTypeOverlay').classList.remove('active');
+}
+
+async function logRestDay(restType) {
+  dismissRestTypeModal();
+
   const todayStr = getLocalDateString();
   let selectedDate = document.getElementById('wDate').value || todayStr;
   const dateLabel = (selectedDate === todayStr) ? 'today' : formatDate(selectedDate);
 
-  if (restDays.includes(selectedDate)) {
+  if (restDays.some(r => r.date === selectedDate)) {
     return toast(`Rest day already logged for ${dateLabel}.`);
   }
 
   const { error } = await supabaseClient.from('rest_days').insert({
     user_id: currentUser.id,
-    rest_date: selectedDate
+    rest_date: selectedDate,
+    rest_type: restType
   });
 
   if (error) {
@@ -444,10 +456,11 @@ async function logRestDay() {
     return toast("Error logging rest day.");
   }
 
-  restDays.push(selectedDate);
+  restDays.push({ date: selectedDate, restType });
   updateStats();
   renderHistory();
-  toast(`Rest day logged for ${dateLabel} 🛌`);
+  const label = restType === 'active' ? 'Active rest' : 'Rest day';
+  toast(`${label} logged for ${dateLabel} ${restType === 'active' ? '🏃' : '🛌'}`);
 }
 
 function removeRestDay(date) {
@@ -465,7 +478,7 @@ function removeRestDay(date) {
 
       if (error) return toast("Failed to delete rest day.");
 
-      restDays = restDays.filter(d => d !== date);
+      restDays = restDays.filter(r => r.date !== date);
       updateStats();
       renderHistory();
       renderProgress();
@@ -509,28 +522,37 @@ function showRecap(workout, isVolumePR) {
     });
   });
 
-  // Exercise table — grouped by muscle
+  // Group flat exercises by name — same grouping the History detail view uses,
+  // so a session with 3 sets of Bench Press shows as ONE row with stacked sets,
+  // not 3 separate rows.
   const grouped = {};
   workout.exercises.forEach(e => {
-    const m = e.muscle || 'Other';
-    if (!grouped[m]) grouped[m] = [];
-    grouped[m].push(e);
+    const key = e.name.toLowerCase();
+    if (!grouped[key]) grouped[key] = { name: e.name, muscle: e.muscle, setsData: [] };
+    grouped[key].setsData.push({ s: e.sets, r: e.reps, w: e.weight });
   });
 
   let tableRows = '';
-  Object.entries(grouped).forEach(([muscle, exs]) => {
-    tableRows += `<tr><td colspan="6" style="padding:10px 0 4px;font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.06);">${muscle}</td></tr>`;
-    exs.forEach(e => {
-      const oneRM = Math.round(calculate1RM(e.weight, e.reps));
-      const isPR = e.weight > (prevPRs[e.name.toLowerCase()] || 0);
-      tableRows += `<tr>
-        <td>${e.name}${isPR ? '<span class="recap-pr-badge">NEW PR</span>' : ''}</td>
-        <td>${e.sets}</td><td>${e.reps}</td>
-        <td>${e.weight}</td>
-        <td>${Math.round(e.sets * e.reps * e.weight)}</td>
-        <td style="color:var(--accent);">${oneRM}</td>
-      </tr>`;
-    });
+  Object.values(grouped).forEach(group => {
+    const totalVol = group.setsData.reduce((a, e) => a + (e.s * e.r * e.w), 0);
+    const max1RM = Math.max(...group.setsData.map(e => calculate1RM(e.w, e.r)));
+    const maxWeight = Math.max(...group.setsData.map(e => e.w));
+    const isPR = maxWeight > (prevPRs[group.name.toLowerCase()] || 0);
+
+    // Stack the load entries visually using line breaks, same as History detail
+    const setsHtml = group.setsData.map(e => e.s).join('<br>');
+    const repsHtml = group.setsData.map(e => e.r).join('<br>');
+    const weightHtml = group.setsData.map(e => e.w).join('<br>');
+
+    tableRows += `<tr>
+      <td style="vertical-align:top;padding-top:10px;">${group.name}${isPR ? '<span class="recap-pr-badge">NEW PR</span>' : ''}</td>
+      <td style="color:var(--muted);font-size:0.72rem;vertical-align:top;padding-top:10px;">${group.muscle || '—'}</td>
+      <td style="vertical-align:top;padding-top:10px;line-height:1.5;">${setsHtml}</td>
+      <td style="vertical-align:top;padding-top:10px;line-height:1.5;">${repsHtml}</td>
+      <td style="vertical-align:top;padding-top:10px;line-height:1.5;">${weightHtml}</td>
+      <td style="vertical-align:top;padding-top:10px;">${Math.round(totalVol)}</td>
+      <td style="color:var(--accent);vertical-align:top;padding-top:10px;">${Math.round(max1RM)}</td>
+    </tr>`;
   });
   document.getElementById('recapTableBody').innerHTML = tableRows;
 
