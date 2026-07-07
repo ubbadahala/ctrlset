@@ -2227,10 +2227,26 @@ input, select, textarea {
   display: flex;
   align-items: center;
   gap: 10px;
+  pointer-events: auto;
   
   /* Bottom-up entrance animation */
   animation: slideUpFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
+
+.toast-undo-btn {
+  background: rgba(232, 255, 71, 0.12);
+  border: 1px solid rgba(232, 255, 71, 0.4);
+  color: var(--accent);
+  border-radius: 30px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.toast-undo-btn:hover { background: rgba(232, 255, 71, 0.22); }
 
 @keyframes slideUpFade {
   from { opacity: 0; transform: translateY(20px) scale(0.9); }

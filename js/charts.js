@@ -261,10 +261,26 @@ function renderBodyweightChart() {
 function renderStrengthChart() {
   const picker = document.getElementById('strengthExercisePicker');
   const canvas = document.getElementById('strengthChart');
+  const card = canvas?.closest('.card');
   if (!canvas || !picker) return;
 
+  if (!workouts.length) {
+    if (card) card.style.display = 'none';
+    return;
+  }
+  if (card) card.style.display = '';
+
+  const wrap = canvas.closest('.chart-wrap');
+  const existingEmpty = wrap?.querySelector('.empty-state');
+  if (existingEmpty) existingEmpty.remove();
+
   const name = picker.value;
-  if (!name) { if (strengthChartInstance) { strengthChartInstance.destroy(); strengthChartInstance = null; } return; }
+  if (!name) {
+    if (strengthChartInstance) { strengthChartInstance.destroy(); strengthChartInstance = null; }
+    canvas.style.display = 'none';
+    wrap?.insertAdjacentHTML('beforeend', '<div class="empty-state">Pick an exercise above to see its progress.</div>');
+    return;
+  }
 
   // Best weight per session date
   const points = workouts
@@ -278,7 +294,12 @@ function renderStrengthChart() {
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   if (strengthChartInstance) { strengthChartInstance.destroy(); strengthChartInstance = null; }
-  if (!points.length) return;
+  if (!points.length) {
+    canvas.style.display = 'none';
+    wrap?.insertAdjacentHTML('beforeend', '<div class="empty-state">No data for this exercise yet.</div>');
+    return;
+  }
+  canvas.style.display = 'block';
 
   // Mark PRs
   let maxW = 0;
@@ -336,6 +357,7 @@ function populateStrengthPicker() {
 
 function renderRadarChart() {
   const canvas = document.getElementById('muscleRadarChart');
+  const card = canvas?.closest('.card');
   if (!canvas) return;
 
   const distribution = { 'Chest': 0, 'Back': 0, 'Shoulders': 0, 'Arms': 0, 'Legs': 0, 'Core': 0 };
@@ -349,14 +371,21 @@ function renderRadarChart() {
     });
   });
 
-  if (radarInstance) radarInstance.destroy();
+  if (radarInstance) { radarInstance.destroy(); radarInstance = null; }
+
+  const totalVolume = Object.values(distribution).reduce((a, b) => a + b, 0);
+  if (!totalVolume) {
+    if (card) card.style.display = 'none';
+    return;
+  }
+  if (card) card.style.display = '';
 
   radarInstance = new Chart(canvas, {
     type: 'radar',
     data: {
       labels: Object.keys(distribution),
       datasets: [{
-        label: 'Workout Frequency',
+        label: 'Volume (kg)',
         data: Object.values(distribution),
         backgroundColor: 'rgba(232,255,71,0.2)',
         borderColor: '#e8ff47',
@@ -365,7 +394,15 @@ function renderRadarChart() {
       }]
     },
     options: {
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#111', borderColor: '#2a2a2a', borderWidth: 1,
+          titleColor: '#e8ff47', bodyColor: '#f0f0f0',
+          titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono' },
+          callbacks: { label: ctx => `${Math.round(ctx.raw).toLocaleString()} kg` }
+        }
+      },
       scales: {
         r: {
           angleLines: { color: 'rgba(255,255,255,0.1)' },

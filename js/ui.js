@@ -68,6 +68,42 @@ function dismissConfirm() {
   if (cb) cb();
 }
 
+function toastWithUndo(msg, icon, onUndo, duration = 5000) {
+  let container = document.getElementById('toastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    document.body.appendChild(container);
+  }
+
+  const fab = document.getElementById('fabEndSession');
+  if (fab && fab.style.display !== 'none') container.classList.add('lifted');
+  else container.classList.remove('lifted');
+
+  const el = document.createElement('div');
+  el.className = 'toast-pill toast-pill-undo';
+  el.innerHTML = `${icon ? `<span style="font-size: 1.1em;">${icon}</span>` : ''} <span>${msg}</span> <button class="toast-undo-btn" type="button">Undo</button>`;
+  container.appendChild(el);
+
+  let dismissed = false;
+  const dismiss = () => {
+    if (dismissed) return;
+    dismissed = true;
+    el.classList.add('fade-out');
+    el.addEventListener('animationend', () => {
+      el.remove();
+      if (container.children.length === 0) container.classList.remove('lifted');
+    }, { once: true });
+  };
+
+  el.querySelector('.toast-undo-btn').addEventListener('click', () => {
+    onUndo();
+    dismiss();
+  });
+
+  setTimeout(dismiss, duration);
+}
+
 function toast(msg, icon = '') {
   // 1. Get or create the container
   let container = document.getElementById('toastContainer');

@@ -1,3 +1,9 @@
+function onHistoryDateRangeChange() {
+  const val = document.getElementById('historyDateRange').value;
+  document.getElementById('historyCustomDateRange').style.display = val === 'custom' ? 'flex' : 'none';
+  renderHistory();
+}
+
 function renderHistory() {
   const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
   const muscleFilter = document.getElementById('historyMuscleFilter')?.value || '';
@@ -6,18 +12,32 @@ function renderHistory() {
   
   if (!list) return;
 
+  // 0. Resolve the date range filter (presets or custom From/To)
+  const dateRangeVal = document.getElementById('historyDateRange')?.value || 'all';
+  let dateFrom = null, dateTo = null;
+  if (dateRangeVal === 'custom') {
+    dateFrom = document.getElementById('historyDateFrom')?.value || null;
+    dateTo = document.getElementById('historyDateTo')?.value || null;
+  } else if (dateRangeVal !== 'all') {
+    const from = new Date();
+    from.setDate(from.getDate() - parseInt(dateRangeVal, 10));
+    dateFrom = getLocalDateString(from);
+  }
+  const inDateRange = (dateStr) => (!dateFrom || dateStr >= dateFrom) && (!dateTo || dateStr <= dateTo);
+
   // 1. Filter Workouts
   let filteredWorkouts = workouts.filter(w =>
     (w.name.toLowerCase().includes(q) ||
     w.exercises.some(e => e.name.toLowerCase().includes(q)) ||
     w.exercises.some(e => (e.muscle || '').toLowerCase().includes(q))) &&
-    (!muscleFilter || w.exercises.some(e => e.muscle === muscleFilter))
+    (!muscleFilter || w.exercises.some(e => e.muscle === muscleFilter)) &&
+    inDateRange(w.date)
   ).map(w => ({ type: 'workout', data: w }));
 
   // 2. Filter Rest Days (Hide them if a specific muscle filter is applied, but keep them for search)
   let filteredRestDays = [];
   if (!muscleFilter && (!q || 'rest day'.includes(q) || 'active rest'.includes(q) || 'cardio'.includes(q))) {
-    filteredRestDays = restDays.map(r => ({ type: 'rest', date: r.date, restType: r.restType || 'complete' }));
+    filteredRestDays = restDays.filter(r => inDateRange(r.date)).map(r => ({ type: 'rest', date: r.date, restType: r.restType || 'complete' }));
   }
 
   // 3. Combine and Sort
@@ -404,24 +424,44 @@ function deleteWorkout(id) {
   showConfirm({
     icon: '🗑️',
     title: 'Delete Workout',
-    body: 'This workout will be permanently removed. This cannot be undone.',
+    body: 'This workout will be removed. You can undo for a few seconds after.',
     confirmLabel: 'Delete',
     danger: true,
-    onConfirm: async () => {
-      // Supabase cascade delete will handle the workout_sets if foreign keys are setup properly.
-      // Otherwise, delete sets first, then workout.
-      const { error: setsErr } = await supabaseClient.from('workout_sets').delete().eq('workout_id', id);
-      const { error: wErr } = await supabaseClient.from('workouts').delete().eq('id', id);
-      
-      if (wErr) {
-        toast("Failed to delete from cloud.");
-        return;
-      }
+    onConfirm: () => {
+      const idx = workouts.findIndex(w => w.id === id);
+      if (idx === -1) return;
+      const removed = workouts[idx];
 
-      workouts = workouts.filter(w => w.id !== id);
+      // Optimistic UI: remove locally right away so it feels instant
+      workouts.splice(idx, 1);
       updateStats();
       renderHistory();
-      toast('Workout deleted 🗑️');
+
+      let undone = false;
+      const pendingDelete = setTimeout(async () => {
+        if (undone) return;
+        const { error: setsErr } = await supabaseClient.from('workout_sets').delete().eq('workout_id', id);
+        const { error: wErr } = await supabaseClient.from('workouts').delete().eq('id', id);
+        if (wErr || setsErr) {
+          console.error(wErr || setsErr);
+          // Cloud delete failed — restore locally so state doesn't drift from the cloud
+          workouts.push(removed);
+          workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
+          updateStats();
+          renderHistory();
+          toast('Failed to delete from cloud — restored.');
+        }
+      }, 5000);
+
+      toastWithUndo('Workout deleted', '🗑️', () => {
+        undone = true;
+        clearTimeout(pendingDelete);
+        workouts.push(removed);
+        workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
+        updateStats();
+        renderHistory();
+        toast('Restored ✅');
+      });
     }
   });
 }
@@ -467,22 +507,47 @@ function removeRestDay(date) {
   showConfirm({
     icon: '🗑️',
     title: 'Remove Rest Day',
-    body: `Delete the rest day logged on ${formatDate(date)}?`,
+    body: `Remove the rest day logged on ${formatDate(date)}? You can undo for a few seconds after.`,
     confirmLabel: 'Remove',
     danger: true,
-    onConfirm: async () => {
-      const { error } = await supabaseClient
-        .from('rest_days')
-        .delete()
-        .match({ user_id: currentUser.id, rest_date: date });
+    onConfirm: () => {
+      const idx = restDays.findIndex(r => r.date === date);
+      if (idx === -1) return;
+      const removed = restDays[idx];
 
-      if (error) return toast("Failed to delete rest day.");
-
-      restDays = restDays.filter(r => r.date !== date);
+      restDays.splice(idx, 1);
       updateStats();
       renderHistory();
       renderProgress();
-      toast('Rest day removed');
+
+      let undone = false;
+      const pendingDelete = setTimeout(async () => {
+        if (undone) return;
+        const { error } = await supabaseClient
+          .from('rest_days')
+          .delete()
+          .match({ user_id: currentUser.id, rest_date: date });
+        if (error) {
+          console.error(error);
+          restDays.push(removed);
+          restDays.sort((a, b) => new Date(b.date) - new Date(a.date));
+          updateStats();
+          renderHistory();
+          renderProgress();
+          toast('Failed to remove from cloud — restored.');
+        }
+      }, 5000);
+
+      toastWithUndo('Rest day removed', '🗑️', () => {
+        undone = true;
+        clearTimeout(pendingDelete);
+        restDays.push(removed);
+        restDays.sort((a, b) => new Date(b.date) - new Date(a.date));
+        updateStats();
+        renderHistory();
+        renderProgress();
+        toast('Restored ✅');
+      });
     }
   });
 }

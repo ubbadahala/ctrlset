@@ -81,6 +81,7 @@
             <div class="session-label">Session in progress</div>
             <div class="session-clock" id="sessionClock">00:00</div>
             <div id="sessionVolDisplay" style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--accent);letter-spacing:0.06em;margin-top:2px;">0 kg</div>
+            <div id="autosaveIndicator" style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.04em;margin-top:4px;opacity:0;transition:opacity 0.3s;">✓ Saved</div>
           </div>
           <div style="text-align:right;">
             <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);">
@@ -209,6 +210,20 @@
             <option value="oldest">Oldest first</option>
             <option value="volume">Highest volume</option>
           </select>
+        </div>
+        <div class="history-controls" style="margin-top:8px;">
+          <select id="historyDateRange" onchange="onHistoryDateRangeChange()" style="margin-bottom:0;flex:1;min-width:110px;font-size:0.78rem;padding:9px 10px;">
+            <option value="all">All time</option>
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="365">Last year</option>
+            <option value="custom">Custom range…</option>
+          </select>
+        </div>
+        <div class="history-controls" id="historyCustomDateRange" style="display:none;margin-top:8px;">
+          <input type="date" id="historyDateFrom" onchange="renderHistory()" style="flex:1;min-width:110px;font-size:0.78rem;padding:9px 10px;margin-bottom:0;">
+          <input type="date" id="historyDateTo" onchange="renderHistory()" style="flex:1;min-width:110px;font-size:0.78rem;padding:9px 10px;margin-bottom:0;">
         </div>
       </div>
       <div id="historyList"></div>

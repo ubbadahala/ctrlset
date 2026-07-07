@@ -175,6 +175,15 @@ function saveDraft() {
     exercises: collectExercises()
   };
   localStorage.setItem('ctrlset_draft', JSON.stringify(draft));
+
+  // Briefly flash a "Saved" indicator so the user knows their progress
+  // is safe even if the app closes or crashes mid-session.
+  const indicator = document.getElementById('autosaveIndicator');
+  if (indicator) {
+    indicator.style.opacity = '1';
+    clearTimeout(indicator._fadeTimeout);
+    indicator._fadeTimeout = setTimeout(() => { indicator.style.opacity = '0'; }, 1200);
+  }
 }
 
 function checkAndRestoreDraft() {
