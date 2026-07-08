@@ -37,6 +37,11 @@
 
   <div class="view active" id="view-log">
 
+    <div class="recovery-reminder-banner" id="recoveryReminderBanner" style="display:none;" onclick="scrollToRecoveryForm(event)">
+      <span id="recoveryReminderText"></span>
+      <button class="recovery-reminder-dismiss" onclick="dismissRecoveryReminder(event)" title="Dismiss">✕</button>
+    </div>
+
     <div class="stats-row">
       <div class="stat-card glass-panel">
         <div class="stat-label">Total Workouts</div>
@@ -128,7 +133,7 @@
       </div>
     </div>
 
-    <div class="card glass-panel" style="border-color: rgba(68, 255, 136, 0.2);">
+    <div class="card glass-panel" id="recoveryFormCard" style="border-color: rgba(68, 255, 136, 0.2);">
       <div class="card-title" style="color: var(--green); margin-bottom: 24px;">Daily Status</div>
       
       <div class="checkin-grid">
@@ -242,8 +247,9 @@
     <div class="card glass-panel">
       <div class="card-title">Training Consistency</div>
       <p style="font-size: 0.7rem; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">Intensity based on total daily volume (Last 90 Days)</p>
-      
-      <div class="heatmap-container">
+
+      <div class="skeleton skeleton-chart" id="heatmapSkeleton"></div>
+      <div class="heatmap-container" id="heatmapContainer" style="display:none;">
         <div class="heatmap-grid" id="volumeHeatmap">
           </div>
         <div class="heatmap-labels">
@@ -265,50 +271,60 @@
 
     <div class="card glass-panel" style="margin-bottom:24px;">
       <div class="card-title">Personal Records</div>
-      <div class="muscle-tabs" id="prMuscleTabs"></div>
-      <div class="pr-grid" id="prGrid"></div>
+      <div class="skeleton skeleton-chart" id="prSkeleton" style="height:160px;"></div>
+      <div id="prContent" style="display:none;">
+        <div class="muscle-tabs" id="prMuscleTabs"></div>
+        <div class="pr-grid" id="prGrid"></div>
+      </div>
     </div>
 
     <div class="card glass-panel">
       <div class="card-title">Muscle Group Distribution</div>
-      <div class="radar-container">
+      <div class="skeleton skeleton-chart" id="radarSkeleton"></div>
+      <div class="radar-container" id="radarContainer" style="display:none;">
         <canvas id="muscleRadarChart"></canvas>
       </div>
     </div>
 
     <div class="card glass-panel chart-container-glass">
       <div class="card-title">Strength Over Time</div>
-      <div class="strength-exercise-picker">
-        <select id="strengthExercisePicker" onchange="renderStrengthChart()" style="margin-bottom:0;font-size:0.82rem;">
-          <option value="">Pick an exercise…</option>
-        </select>
-      </div>
-      <div class="chart-wrap">
-        <canvas id="strengthChart" style="max-height:200px;"></canvas>
+      <div class="skeleton skeleton-chart" id="strengthSkeleton"></div>
+      <div id="strengthContent" style="display:none;">
+        <div class="strength-exercise-picker">
+          <select id="strengthExercisePicker" onchange="renderStrengthChart()" style="margin-bottom:0;font-size:0.82rem;">
+            <option value="">Pick an exercise…</option>
+          </select>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="strengthChart" style="max-height:200px;"></canvas>
+        </div>
       </div>
     </div>
 
     <div class="card glass-panel chart-container-glass">
       <div class="card-title">Bodyweight Trend</div>
-      <div class="bw-chart-wrap glass-panel" style="padding:16px;">
+      <div class="skeleton skeleton-chart" id="bwSkeleton" style="height:180px;"></div>
+      <div class="bw-chart-wrap glass-panel" id="bwChartWrap" style="padding:16px;display:none;">
         <canvas id="bwChart" style="max-height:180px;"></canvas>
       </div>
     </div>
 
     <div class="card glass-panel chart-container-glass">
       <div class="card-title">Volume by Muscle Group</div>
-      
-      <div class="legend-overlay" id="chartLegend"></div>
+      <div class="skeleton skeleton-chart" id="volumeChartSkeleton"></div>
+      <div id="volumeChartContent" style="display:none;">
+        <div class="legend-overlay" id="chartLegend"></div>
 
-      <div class="chart-controls">
-        <button class="chart-btn active" onclick="setChartRange('4w', this)">4 Weeks</button>
-        <button class="chart-btn" onclick="setChartRange('3m', this)">3 Months</button>
-      </div>
+        <div class="chart-controls">
+          <button class="chart-btn active" onclick="setChartRange('4w', this)">4 Weeks</button>
+          <button class="chart-btn" onclick="setChartRange('3m', this)">3 Months</button>
+        </div>
 
-      <div class="chart-controls" id="chartMuscleFilter" style="margin-top:-8px;margin-bottom:16px;"></div>
+        <div class="chart-controls" id="chartMuscleFilter" style="margin-top:-8px;margin-bottom:16px;"></div>
 
-      <div class="chart-wrap">
-        <canvas id="volumeChart"></canvas>
+        <div class="chart-wrap">
+          <canvas id="volumeChart"></canvas>
+        </div>
       </div>
     </div>
   </div>

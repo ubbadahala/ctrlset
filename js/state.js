@@ -137,6 +137,10 @@ async function syncDataFromSupabase() {
     // Let anything that rendered before `workouts` was populated
     // (e.g. a restored draft's last-session bar / live deltas) recompute now.
     document.dispatchEvent(new CustomEvent('ctrlset:workoutsLoaded'));
+    checkRecoveryReminder();
+    renderProgress();
+    renderHeatmap();
+    renderRadarChart();
 
   } catch (error) {
     console.error("Sync failed:", error);

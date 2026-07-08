@@ -83,6 +83,7 @@ function renderHistory() {
         <div class="rest-entry-title">${isActive ? '🏃 Active Rest' : '🛋️ Complete Rest'}</div>
         <div style="display:flex; align-items:center; gap:16px;">
           <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">${formatDate(item.date)}</span>
+          <button class="btn-icon" style="width:32px; height:32px; margin-bottom:0; font-size:0.85rem;" onclick="toggleRestDayType('${item.date}')" title="Switch to ${isActive ? 'Complete' : 'Active'} Rest">🔄</button>
           <button class="btn-icon" style="width:32px; height:32px; margin-bottom:0; font-size:0.85rem;" onclick="removeRestDay('${item.date}')" title="Delete Rest Day">✕</button>
         </div>
       </div>`;
@@ -168,6 +169,11 @@ function renderRecoveryHistory() {
 }
 
 function renderPRs() {
+  const prSkeleton = document.getElementById('prSkeleton');
+  const prContent = document.getElementById('prContent');
+  if (prSkeleton) prSkeleton.style.display = 'none';
+  if (prContent) prContent.style.display = '';
+
   // Build PRs map: exercise name → best entry (with muscle group from the workout)
   const prs = {};
   workouts.forEach(w => {
@@ -224,6 +230,58 @@ function setPRMuscle(muscle) {
 }
 
 let activePRMuscle = 'All';
+
+function checkRecoveryReminder() {
+  const banner = document.getElementById('recoveryReminderBanner');
+  const textEl = document.getElementById('recoveryReminderText');
+  if (!banner || !textEl) return;
+
+  const todayStr = getLocalDateString();
+  const dismissedFor = localStorage.getItem('ctrlset_recovery_reminder_dismissed');
+  if (dismissedFor === todayStr) {
+    banner.style.display = 'none';
+    return;
+  }
+
+  const latest = [...recoveryLogs].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+
+  if (!latest) {
+    // Never logged recovery at all — only nudge once the user has at least
+    // one workout, so brand-new users aren't hit with this on their first visit.
+    if (!workouts.length) { banner.style.display = 'none'; return; }
+    textEl.textContent = "💤 You haven't logged any recovery data yet — tap to start tracking sleep, protein & more";
+    banner.style.display = 'flex';
+    return;
+  }
+
+  const daysSince = Math.round((new Date(todayStr) - new Date(latest.date)) / 86400000);
+  if (daysSince <= 0) {
+    banner.style.display = 'none';
+    return;
+  }
+
+  textEl.textContent = daysSince === 1
+    ? "💤 You haven't logged recovery today — keep the streak going"
+    : `💤 You haven't logged recovery in ${daysSince} days — tap to catch up`;
+  banner.style.display = 'flex';
+}
+
+function scrollToRecoveryForm(e) {
+  if (e && e.target.classList.contains('recovery-reminder-dismiss')) return;
+  const card = document.getElementById('recoveryFormCard');
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card.classList.remove('recovery-form-highlight');
+  void card.offsetWidth; // restart animation if triggered again
+  card.classList.add('recovery-form-highlight');
+}
+
+function dismissRecoveryReminder(e) {
+  if (e) e.stopPropagation();
+  localStorage.setItem('ctrlset_recovery_reminder_dismissed', getLocalDateString());
+  const banner = document.getElementById('recoveryReminderBanner');
+  if (banner) banner.style.display = 'none';
+}
 
 function renderNutritionInsights() {
   const statsContainer = document.getElementById('nutritionStats');
@@ -499,6 +557,7 @@ async function logRestDay(restType) {
   restDays.push({ date: selectedDate, restType });
   updateStats();
   renderHistory();
+  renderHeatmap();
   const label = restType === 'active' ? 'Active rest' : 'Rest day';
   toast(`${label} logged for ${dateLabel} ${restType === 'active' ? '🏃' : '🛌'}`);
 }
@@ -519,6 +578,7 @@ function removeRestDay(date) {
       updateStats();
       renderHistory();
       renderProgress();
+      renderHeatmap();
 
       let undone = false;
       const pendingDelete = setTimeout(async () => {
@@ -534,6 +594,7 @@ function removeRestDay(date) {
           updateStats();
           renderHistory();
           renderProgress();
+          renderHeatmap();
           toast('Failed to remove from cloud — restored.');
         }
       }, 5000);
@@ -546,10 +607,41 @@ function removeRestDay(date) {
         updateStats();
         renderHistory();
         renderProgress();
+        renderHeatmap();
         toast('Restored ✅');
       });
     }
   });
+}
+
+async function toggleRestDayType(date) {
+  const entry = restDays.find(r => r.date === date);
+  if (!entry) return;
+
+  const previousType = entry.restType;
+  const newType = previousType === 'active' ? 'complete' : 'active';
+
+  // Optimistic update
+  entry.restType = newType;
+  renderHistory();
+  renderProgress();
+  renderHeatmap();
+
+  const { error } = await supabaseClient
+    .from('rest_days')
+    .update({ rest_type: newType })
+    .match({ user_id: currentUser.id, rest_date: date });
+
+  if (error) {
+    console.error(error);
+    entry.restType = previousType; // revert on failure
+    renderHistory();
+    renderProgress();
+    renderHeatmap();
+    return toast('Failed to update rest day.');
+  }
+
+  toast(newType === 'active' ? 'Switched to Active Rest 🏃' : 'Switched to Complete Rest 🛋️');
 }
 
 function showRecap(workout, isVolumePR) {

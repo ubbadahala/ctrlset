@@ -3,8 +3,13 @@ let activeChartMuscle = 'All';
 
 function renderChart() {
   const canvas = document.getElementById('volumeChart');
-  const wrap = document.querySelector('.chart-wrap');
+  const wrap = canvas?.closest('.chart-wrap');
   if (!canvas || !wrap) return;
+
+  const volumeChartSkeleton = document.getElementById('volumeChartSkeleton');
+  const volumeChartContent = document.getElementById('volumeChartContent');
+  if (volumeChartSkeleton) volumeChartSkeleton.style.display = 'none';
+  if (volumeChartContent) volumeChartContent.style.display = '';
 
   const now = new Date();
   let cutoff = new Date(0); // Very old date as a fallback
@@ -143,6 +148,11 @@ function renderHeatmap() {
   const container = document.getElementById('volumeHeatmap');
   if (!container) return;
 
+  const skeleton = document.getElementById('heatmapSkeleton');
+  const wrap = document.getElementById('heatmapContainer');
+  if (skeleton) skeleton.style.display = 'none';
+  if (wrap) wrap.style.display = '';
+
   const now = new Date();
   const heatmapData = {};
 
@@ -192,6 +202,10 @@ function renderBodyweightChart() {
   const card = canvas?.closest('.card');
   if (!canvas) return;
 
+  const bwSkeleton = document.getElementById('bwSkeleton');
+  const bwChartWrap = document.getElementById('bwChartWrap');
+  if (bwSkeleton) bwSkeleton.style.display = 'none';
+
   // Collect bodyweight entries sorted oldest → newest
   const entries = [...recoveryLogs]
     .filter(r => r.bodyweight > 0)
@@ -204,6 +218,7 @@ function renderBodyweightChart() {
     return;
   }
   if (card) card.style.display = '';
+  if (bwChartWrap) bwChartWrap.style.display = '';
 
   const labels = entries.map(r => formatDate(r.date));
   const data   = entries.map(r => r.bodyweight);
@@ -264,11 +279,17 @@ function renderStrengthChart() {
   const card = canvas?.closest('.card');
   if (!canvas || !picker) return;
 
+  const strengthSkeleton = document.getElementById('strengthSkeleton');
+  const strengthContent = document.getElementById('strengthContent');
+
   if (!workouts.length) {
+    if (strengthSkeleton) strengthSkeleton.style.display = 'none';
     if (card) card.style.display = 'none';
     return;
   }
   if (card) card.style.display = '';
+  if (strengthSkeleton) strengthSkeleton.style.display = 'none';
+  if (strengthContent) strengthContent.style.display = '';
 
   const wrap = canvas.closest('.chart-wrap');
   const existingEmpty = wrap?.querySelector('.empty-state');
@@ -360,6 +381,10 @@ function renderRadarChart() {
   const card = canvas?.closest('.card');
   if (!canvas) return;
 
+  const radarSkeleton = document.getElementById('radarSkeleton');
+  const radarContainer = document.getElementById('radarContainer');
+  if (radarSkeleton) radarSkeleton.style.display = 'none';
+
   const distribution = { 'Chest': 0, 'Back': 0, 'Shoulders': 0, 'Arms': 0, 'Legs': 0, 'Core': 0 };
 
   // Count volume (not sessions) per muscle group across all exercises
@@ -379,6 +404,7 @@ function renderRadarChart() {
     return;
   }
   if (card) card.style.display = '';
+  if (radarContainer) radarContainer.style.display = '';
 
   radarInstance = new Chart(canvas, {
     type: 'radar',

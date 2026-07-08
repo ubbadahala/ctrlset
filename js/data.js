@@ -320,14 +320,121 @@ async function addCustomExercise() {
   }
 }
 
+async function saveExercises() {
+  if (!currentUser) return;
+  try {
+    // Full-array sync: clear this user's custom exercises, then re-insert
+    // exercisesDB as the new source of truth. Simpler and more reliable
+    // than diffing individual adds/renames/deletes row by row.
+    await supabaseClient.from('exercises').delete().eq('user_id', currentUser.id);
+
+    if (exercisesDB.length > 0) {
+      const toInsert = exercisesDB.map(ex => ({
+        user_id: currentUser.id,
+        name: ex.name,
+        muscle_group: ex.muscle || ''
+      }));
+      const { data, error } = await supabaseClient.from('exercises').insert(toInsert).select();
+      if (error) throw error;
+
+      // Re-attach fresh IDs so future renames/merges/deletes reference real rows
+      exercisesDB = data.map(ex => ({ id: ex.id, name: ex.name, muscle: ex.muscle_group }));
+      exercisesDB.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    renderExerciseDB();
+    renderSettingsExerciseList();
+  } catch (err) {
+    console.error(err);
+    toast('Failed to save exercise changes.');
+  }
+}
+
 function renameExercise(index, newName) {
   newName = newName.trim();
   if (!newName) return renderSettingsExerciseList();
-  const dup = exercisesDB.some((ex, i) => i !== index && ex.name.toLowerCase() === newName.toLowerCase());
-  if (dup) { toast('Name already exists!'); return renderSettingsExerciseList(); }
+
+  const oldName = exercisesDB[index].name;
+  if (oldName === newName) return;
+
+  const dupIndex = exercisesDB.findIndex((ex, i) => i !== index && ex.name.toLowerCase() === newName.toLowerCase());
+
+  if (dupIndex !== -1) {
+    // Renaming onto an existing exercise name = merge the two entries
+    const targetName = exercisesDB[dupIndex].name;
+    showConfirm({
+      icon: '🔀',
+      title: 'Merge Exercises?',
+      body: `"${targetName}" already exists. Merge "${oldName}" into it? "${oldName}" will be removed from your exercise list.`,
+      confirmLabel: 'Merge',
+      onConfirm: () => mergeExercise(index, oldName, targetName)
+    });
+    renderSettingsExerciseList(); // revert the input's displayed text unless/until confirmed
+    return;
+  }
+
   exercisesDB[index].name = newName;
   saveExercises();
   toast('Renamed ✓');
+
+  if (oldName.toLowerCase() === newName.toLowerCase()) return; // casing-only change, nothing in history to fix
+  offerHistoryRename(oldName, newName);
+}
+
+function mergeExercise(index, oldName, targetName) {
+  exercisesDB.splice(index, 1);
+  saveExercises();
+  toast(`Merged into "${targetName}" ✓`);
+  offerHistoryRename(oldName, targetName);
+}
+
+function offerHistoryRename(oldName, newName) {
+  // If this exercise appears in past workout history, offer to rename it there
+  // too, so search/PRs/strength charts stay consistent instead of the old name
+  // living on forever in old entries.
+  const affectedCount = workouts.reduce((count, w) =>
+    count + w.exercises.filter(e => e.name.toLowerCase() === oldName.toLowerCase()).length, 0);
+
+  if (affectedCount > 0) {
+    showConfirm({
+      icon: '🔁',
+      title: 'Update Past Workouts?',
+      body: `"${oldName}" appears in ${affectedCount} past set${affectedCount === 1 ? '' : 's'}. Rename it there too, so your history and PRs stay consistent?`,
+      confirmLabel: 'Yes, Update History',
+      onConfirm: () => renameExerciseInHistory(oldName, newName)
+    });
+  }
+}
+
+async function renameExerciseInHistory(oldName, newName) {
+  try {
+    // Escape LIKE wildcards so odd characters in a name don't act as patterns
+    const escaped = oldName.replace(/[%_]/g, ch => '\\' + ch);
+
+    const { error } = await supabaseClient
+      .from('workout_sets')
+      .update({ exercise_name: newName })
+      .ilike('exercise_name', escaped);
+      // Relies on RLS to scope workout_sets to the current user's own
+      // workouts (same trust pattern clearAllData() already uses).
+
+    if (error) throw error;
+
+    // Reflect the rename locally right away so History/PRs/Strength charts
+    // update immediately without needing a re-sync.
+    workouts.forEach(w => {
+      w.exercises.forEach(e => {
+        if (e.name.toLowerCase() === oldName.toLowerCase()) e.name = newName;
+      });
+    });
+
+    renderHistory();
+    renderProgress();
+    toast(`Past workouts updated to "${newName}" ✅`);
+  } catch (err) {
+    console.error(err);
+    toast('Failed to update past workouts.');
+  }
 }
 
 function setExerciseMuscle(index, muscle) {
@@ -464,6 +571,7 @@ async function saveRecovery() {
 
     toast('Recovery metrics saved! 🔋');
     if (navigator.vibrate) navigator.vibrate(100);
+    checkRecoveryReminder();
   } catch (err) {
     console.error(err);
     toast('Error saving recovery log.');
