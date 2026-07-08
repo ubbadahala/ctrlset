@@ -51,6 +51,17 @@ function refreshWorkoutNameDB() {
   dl.innerHTML = names.map(n => `<option value="${n}">`).join('');
 }
 
+// Register the service worker after the page has fully loaded, so it
+// doesn't compete with initial page-load bandwidth. Enables installing
+// CtrlSet to a home screen and loading the app shell offline.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => {
+      console.error('Service worker registration failed:', err);
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const now = new Date();
 

@@ -13,3 +13,12 @@ function calculate1RM(weight, reps) {
   // Epley Formula
   return weight * (1 + (reps / 30));
 }
+
+// bestSets: array of {weight, reps} — one entry per session, newest-first —
+// representing the best set logged for a given exercise in that session.
+function isStagnant(bestSets) {
+  return bestSets.length >= 3 &&
+    bestSets[0].weight === bestSets[1].weight &&
+    bestSets[1].weight === bestSets[2].weight &&
+    bestSets[0].reps <= bestSets[1].reps;
+}

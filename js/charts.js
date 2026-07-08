@@ -441,8 +441,58 @@ function renderRadarChart() {
   });
 }
 
+function renderStagnationCard() {
+  const listEl = document.getElementById('stagnationList');
+  const skeleton = document.getElementById('stagnationSkeleton');
+  const emptyEl = document.getElementById('stagnationEmpty');
+  if (!listEl) return;
+  if (skeleton) skeleton.style.display = 'none';
+
+  // Collect every distinct exercise name logged so far
+  const namesSeen = new Set();
+  workouts.forEach(w => w.exercises.forEach(e => namesSeen.add(e.name)));
+
+  const stagnantList = [];
+  namesSeen.forEach(name => {
+    // Same "one best set per session" pattern used by predictLoadBlock()
+    const historyWorkouts = workouts.filter(w => w.exercises.some(e => e.name.toLowerCase() === name.toLowerCase()));
+    if (historyWorkouts.length < 3) return;
+
+    const historyBestSets = historyWorkouts.map(w =>
+      w.exercises
+        .filter(e => e.name.toLowerCase() === name.toLowerCase())
+        .reduce((a, b) => calculate1RM(a.weight, a.reps) >= calculate1RM(b.weight, b.reps) ? a : b)
+    );
+
+    if (isStagnant(historyBestSets)) {
+      const last = historyBestSets[0];
+      const suggestion = Math.floor((last.weight * 0.9) * 2) / 2;
+      stagnantList.push({ name, muscle: last.muscle, weight: last.weight, suggestion });
+    }
+  });
+
+  if (!stagnantList.length) {
+    listEl.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = 'block';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  listEl.innerHTML = stagnantList.map(s => `
+    <div class="stagnation-item">
+      <div>
+        <div class="stagnation-name">${s.name}</div>
+        <div class="stagnation-meta">${s.muscle || '—'} • stuck at ${s.weight}kg for 3+ sessions</div>
+      </div>
+      <div class="stagnation-suggestion">Try ${s.suggestion}kg</div>
+    </div>
+  `).join('');
+}
+
 function renderProgress() {
+  renderAchievements();
   renderPRs();
+  renderStagnationCard();
   renderChart();
   renderBodyweightChart();
   populateStrengthPicker();

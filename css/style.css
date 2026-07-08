@@ -1096,6 +1096,86 @@ input, select, textarea {
     box-shadow: 0 0 10px rgba(255, 165, 90, 0.5); 
   }
 
+  /* ── ACHIEVEMENTS ── */
+  .achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px;
+  }
+  .achievement-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+    padding: 14px 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: default;
+    transition: transform 0.15s, background 0.15s;
+  }
+  .achievement-badge.unlocked {
+    background: rgba(232, 255, 71, 0.08);
+    border-color: rgba(232, 255, 71, 0.3);
+  }
+  .achievement-badge.unlocked:hover { transform: translateY(-2px); background: rgba(232, 255, 71, 0.14); }
+  .achievement-badge.locked { opacity: 0.35; filter: grayscale(1); }
+  .achievement-icon { font-size: 1.7rem; line-height: 1; }
+  .achievement-title {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .achievement-progress {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--muted);
+  }
+
+  .achievement-toast-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .achievement-toast-badge .achievement-icon { font-size: 1.4rem; }
+
+  /* ── PLATEAU WATCH CARD ── */
+  .stagnation-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(255, 179, 71, 0.06);
+    border: 1px solid rgba(255, 179, 71, 0.2);
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  .stagnation-item:last-child { margin-bottom: 0; }
+  .stagnation-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .stagnation-meta {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .stagnation-suggestion {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #ffb347;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   /* ── RECOVERY REMINDER BANNER ── */
   .recovery-reminder-banner {
     background: rgba(68, 255, 136, 0.08);

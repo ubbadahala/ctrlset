@@ -209,12 +209,9 @@ function predictLoadBlock(bid, lid) {
   let suggestion = last.weight;
   let statusMsg = '', statusColor = 'var(--accent)';
 
-  const isStagnant = historyBestSets.length >= 3 &&
-    historyBestSets[0].weight === historyBestSets[1].weight &&
-    historyBestSets[1].weight === historyBestSets[2].weight &&
-    historyBestSets[0].reps <= historyBestSets[1].reps;
+  const stagnant = isStagnant(historyBestSets);
     
-  if (isStagnant) {
+  if (stagnant) {
     suggestion = Math.floor((last.weight * 0.9) * 2) / 2;
     statusMsg = `⚠️ Stagnation detected. Deloading to ${suggestion}kg.`;
     statusColor = '#ffb347';
@@ -269,6 +266,8 @@ async function saveWorkout(durationMins) {
 
   if (!currentUser) return toast('Not logged in!');
   toast('Saving to cloud... ☁️');
+
+  const previousUnlockedIds = getUnlockedAchievementIds();
 
   const currentVolume = exercises.reduce((a, e) => a + (e.sets * e.reps * e.weight), 0);
   const maxVolume = workouts.reduce((max, w) => {
@@ -330,6 +329,7 @@ async function saveWorkout(durationMins) {
     updateStats();
     refreshWorkoutNameDB();
     renderHistory();
+    checkForNewAchievements(previousUnlockedIds);
     if (isVolumePR) triggerConfetti();
     
     clearInterval(sessionClockInterval);
@@ -564,7 +564,7 @@ async function saveEditedRecovery() {
   const logId = recoveryLogs[idx].id;
 
   try {
-    const { error } = await supabaseClient
+    const { error } = await supabase
       .from('recovery_logs')
       .update({
         log_date: date,
