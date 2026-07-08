@@ -47,15 +47,18 @@ async function importJSON() {
 
         if (imported.exercises && imported.exercises.length > 0) {
           const exercisesToInsert = [];
+          const queuedNames = new Set(); // tracks names already queued from THIS import, so duplicates within the file itself are also caught
 
           for (const ex of imported.exercises) {
-            // Only prepare to insert if it's new
-            if (ex.name && !exerciseIdMap[ex.name.toLowerCase()]) {
+            const key = (ex.name || '').toLowerCase();
+            // Only queue if it's new — not already in the cloud, and not already queued earlier in this same file
+            if (ex.name && key && !exerciseIdMap[key] && !queuedNames.has(key)) {
               exercisesToInsert.push({
                 user_id: currentUser.id,
                 name: ex.name,
                 muscle_group: ex.muscle || ''
               });
+              queuedNames.add(key);
             }
           }
 
