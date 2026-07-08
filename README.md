@@ -1,6 +1,38 @@
 # 🏋️ CtrlSet: Cloud-Native Gym Tracker
 
-CtrlSet is a lightning-fast, Single Page Application (SPA) built for tracking workouts, recovery metrics, and personal records. Originally built as an offline-first `localStorage` app, CtrlSet v4.0 has been completely re-architected to be a fully cloud-synced platform powered by Supabase.
+CtrlSet is a lightning-fast, Single Page Application (SPA) built for tracking workouts, recovery metrics, and personal records. Originally built as an offline-first `localStorage` app, CtrlSet v4.0 was completely re-architected to be a fully cloud-synced platform powered by Supabase. v4.1 builds on that foundation with reliability fixes, mobile UX improvements, and new engagement features.
+
+## 🆕 v4.1 Update — Reliability, UX & Engagement
+
+### 🐛 Reliability Fixes
+* **Session Restore:** Fixed a race condition where resuming a draft after closing the browser wouldn't show the "last session Xd ago" bar or live set deltas — both depend on workout history that loads asynchronously from Supabase, and the restore path ran before that data arrived. Both now recompute once cloud sync completes.
+* **Recovery Log Editing:** Fixed a copy-paste bug where editing a recovery log referenced the wrong Supabase client variable, causing every edit to silently fail.
+* **Exercise Management:** Discovered and implemented a missing `saveExercises()` function — renaming an exercise, changing its muscle group, deleting it, or restoring defaults were all silently failing before ever reaching the cloud.
+* **Import Deduplication:** Fixed the JSON import engine to also catch duplicate exercise names *within* the same backup file (previously only checked against exercises already in the cloud).
+* **Chart Wrapper Bug:** Fixed the Volume by Muscle Group chart grabbing the wrong `.chart-wrap` element (the first one in the DOM, belonging to a different chart) instead of its own.
+
+### 📱 Mobile & Navigation UX
+* **History Sub-Tabs:** Split the History page into Workouts / Recovery tabs so recovery logs no longer require scrolling past the entire workout feed to reach.
+* **Recap Page Alignment:** The end-of-session recap now matches the History detail view's structure — grouped by exercise with stacked sets and a Muscle column, instead of one row per individual set.
+* **Undoable Deletes:** Deleting a workout or rest day now shows an "Undo" toast with a 5-second grace period before the cloud delete actually fires, instead of an instant permanent delete.
+* **Autosave Indicator:** A subtle "✓ Saved" flash now confirms every autosave tick during an active session.
+* **Date-Range Filter:** History can now be filtered by preset ranges (7/30/90/365 days) or a custom From/To range, alongside the existing muscle and sort filters.
+* **Rest Day Types:** Rest days can now be logged as Active Rest (cardio, walk, mobility) or Complete Rest, editable in place after logging via a 🔄 toggle — no more delete-and-relog.
+* **Recovery Reminder:** A dismissible banner nudges you on the Log page if recovery hasn't been logged today or in several days.
+* **Loading Skeletons:** All Progress page cards (heatmap, PRs, radar, strength, bodyweight, volume chart) now show skeleton loaders during initial cloud sync instead of flashing empty.
+* **Exercise Rename & Merge:** Renaming an exercise in Settings now offers to propagate the change across past workout history too, so search/PRs/strength charts don't carry a typo forever. Renaming onto an existing exercise name merges the two instead of blocking with a "name already exists" error.
+
+### 🏅 Achievements
+* **15 Badges:** Workout count (1/10/50/100), streak (3/7/14/30 days), lifetime volume (1K/10K/50K/100K/500K kg), and PR count (1/10/50) milestones, shown as a badge grid at the top of the Progress page with unlock dates and live progress toward locked ones.
+* **Real-Time Unlocks:** Achievements are checked the moment a workout is saved — newly-crossed badges trigger a toast + confetti immediately.
+
+### ⚠️ Plateau Watch
+* Surfaces the app's existing stagnation-detection logic (previously only reachable via a manual "predict" button mid-workout) as a proactive Progress page card — any exercise stuck at the same weight for 3+ sessions is flagged with a suggested deload weight.
+
+### 📴 PWA / Offline Support
+* **Installable:** Added a web app manifest and properly sized icons so CtrlSet can be installed to a home screen like a native app.
+* **Offline App Shell:** A service worker caches the app shell (HTML/CSS/JS/CDN libraries) so the app loads without a connection. Supabase API calls are explicitly excluded from caching so online/offline error handling still behaves correctly.
+* **Scope note:** this covers offline *loading* and installability, not offline *writes* — saving a workout still requires a connection. Draft autosave (localStorage) already works offline independent of this.
 
 ## 🚀 The v4.0 Cloud Migration Updates
 
@@ -19,7 +51,7 @@ This major release transitions the application from local browser storage to a s
 
 ### 💽 Smart Backup & Import Parsing
 * **UUID Dictionary Mapping:** Completely rewrote the JSON import engine to handle legacy local backups. The importer now uploads custom exercises to the cloud, retrieves their new UUIDs, builds a local dictionary, and accurately maps those IDs to the relational `workout_sets` during bulk upload.
-* **Deduplication:** The import engine automatically filters out duplicate custom exercises to keep the database clean.
+* **Deduplication:** The import engine automatically filters out duplicate custom exercises to keep the database clean, both against existing cloud data and within the same backup file.
 * **Secure Data Wipes:** The "Delete All Data" feature now issues cascading delete commands to the cloud database, securely wiping all user-specific rows.
 
 ### ⚙️ UI & Settings Synchronization
@@ -33,3 +65,13 @@ This major release transitions the application from local browser storage to a s
 * **Backend:** Supabase (PostgreSQL, GoTrue Auth)
 * **Data Visualization:** Chart.js
 * **Export Generation:** html2canvas
+* **Offline Support:** Service Worker + Web App Manifest
+
+## 📋 Manual Setup Required
+
+The following schema change must be applied to your Supabase `rest_days` table to support Active/Complete rest day types:
+
+```sql
+ALTER TABLE rest_days ADD COLUMN rest_type text DEFAULT 'complete';
+```
+
