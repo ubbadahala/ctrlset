@@ -22,6 +22,9 @@ CtrlSet is a lightning-fast, Single Page Application (SPA) built for tracking wo
 * **Loading Skeletons:** All Progress page cards (heatmap, PRs, radar, strength, bodyweight, volume chart) now show skeleton loaders during initial cloud sync instead of flashing empty.
 * **Exercise Rename & Merge:** Renaming an exercise in Settings now offers to propagate the change across past workout history too, so search/PRs/strength charts don't carry a typo forever. Renaming onto an existing exercise name merges the two instead of blocking with a "name already exists" error.
 
+### 🔁 Repeat Workout
+* A "Repeat Workout" button next to the Workout Name field opens a picker of past workout names (most recently used first). Selecting one clones that workout's exercises, sets, and reps into a new draft — weights start blank so today's numbers are entered fresh rather than silently carried over from last time.
+
 ### 🏅 Achievements
 * **15 Badges:** Workout count (1/10/50/100), streak (3/7/14/30 days), lifetime volume (1K/10K/50K/100K/500K kg), and PR count (1/10/50) milestones, shown as a badge grid at the top of the Progress page with unlock dates and live progress toward locked ones.
 * **Real-Time Unlocks:** Achievements are checked the moment a workout is saved — newly-crossed badges trigger a toast + confetti immediately.

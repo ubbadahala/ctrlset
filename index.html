@@ -115,7 +115,10 @@
       </div>
 
       <div>
-        <label>Workout Name</label>
+        <label style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Workout Name</span>
+          <button type="button" class="btn-ghost" onclick="openRepeatWorkoutModal()" style="margin:0;padding:4px 10px;font-size:0.68rem;width:auto;">🔁 Repeat Workout</button>
+        </label>
         <input type="text" id="wName" placeholder="e.g. Push Day, Leg Day…" list="workout-name-db" autocomplete="off">
         <datalist id="workout-name-db"></datalist>
       </div>
@@ -698,6 +701,20 @@
       <button class="confirm-btn confirm-btn-ok" style="width:100%;" onclick="logRestDay('active')">🏃 Active Rest (Cardio, walk, mobility…)</button>
       <button class="confirm-btn confirm-btn-ok" style="width:100%;" onclick="logRestDay('complete')">🛋️ Complete Rest</button>
       <button class="confirm-btn confirm-btn-cancel" style="width:100%;" onclick="dismissRestTypeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── REPEAT WORKOUT DIALOG ── -->
+<div class="confirm-overlay" id="repeatWorkoutOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🔁</div>
+    <div class="confirm-title">Repeat a Workout</div>
+    <div class="confirm-body">Load the exercises from a past workout into a new draft. Sets and reps carry over — weights start blank so you can decide today's numbers fresh.</div>
+    <select id="repeatWorkoutPicker" style="margin-bottom:16px;"></select>
+    <div class="confirm-actions" style="display:flex; flex-direction:column; gap:10px;">
+      <button class="confirm-btn confirm-btn-ok" style="width:100%;" onclick="loadRepeatWorkout()">Load Workout</button>
+      <button class="confirm-btn confirm-btn-cancel" style="width:100%;" onclick="dismissRepeatWorkoutModal()">Cancel</button>
     </div>
   </div>
 </div>

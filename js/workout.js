@@ -256,6 +256,81 @@ function collectExercises() {
   return result;
 }
 
+function openRepeatWorkoutModal() {
+  if (!workouts.length) return toast('No past workouts to repeat yet!');
+
+  // Unique workout names, ordered by most recent use (workouts is already newest-first)
+  const seen = new Set();
+  const names = [];
+  workouts.forEach(w => {
+    if (!seen.has(w.name)) { seen.add(w.name); names.push(w.name); }
+  });
+
+  document.getElementById('repeatWorkoutPicker').innerHTML =
+    names.map(n => `<option value="${n}">${n}</option>`).join('');
+  document.getElementById('repeatWorkoutOverlay').classList.add('active');
+}
+
+function dismissRepeatWorkoutModal() {
+  document.getElementById('repeatWorkoutOverlay').classList.remove('active');
+}
+
+function loadRepeatWorkout() {
+  const name = document.getElementById('repeatWorkoutPicker').value;
+  if (!name) return;
+
+  // workouts is sorted newest-first, so the first match is the most recent
+  // workout with this name.
+  const source = workouts.find(w => w.name === name);
+  if (!source) return;
+
+  const applyRepeat = () => {
+    document.getElementById('wName').value = source.name;
+    // Date is intentionally left as-is — today by default, or the running
+    // session's start date — rather than copying the source workout's date.
+
+    document.getElementById('exercisesList').innerHTML = '';
+    blockCount = 0; loadCount = 0;
+
+    // Regroup the source workout's flat exercises into UI blocks, same
+    // pattern checkAndRestoreDraft() uses. Sets/reps carry over; weight
+    // starts blank so today's numbers aren't silently copied from last time.
+    const grouped = {};
+    source.exercises.forEach(e => {
+      const key = e.name.toLowerCase();
+      if (!grouped[key]) grouped[key] = { name: e.name, muscle: e.muscle, loads: [] };
+      grouped[key].loads.push({ sets: e.sets, reps: e.reps, weight: '' });
+    });
+
+    Object.values(grouped).forEach(group => {
+      addExerciseBlock({ name: group.name, muscle: group.muscle });
+      const bid = blockCount;
+      const loadContainer = document.getElementById('loads-' + bid);
+      if (loadContainer) loadContainer.innerHTML = '';
+      group.loads.forEach(load => addLoadRow(bid, load));
+    });
+
+    dismissRepeatWorkoutModal();
+    toast(`Loaded "${source.name}" — set today's weights 💪`);
+  };
+
+  dismissRepeatWorkoutModal();
+
+  // Warn before clobbering exercises already entered in an active session
+  if (sessionStartTime && document.querySelectorAll('.exercise-block').length > 0) {
+    showConfirm({
+      icon: '⚠️',
+      title: 'Replace Current Exercises?',
+      body: 'You have exercises already entered this session. Loading a repeat workout will replace them.',
+      confirmLabel: 'Replace',
+      danger: true,
+      onConfirm: applyRepeat
+    });
+  } else {
+    applyRepeat();
+  }
+}
+
 async function saveWorkout(durationMins) {
   const name = document.getElementById('wName').value.trim();
   const date = document.getElementById('wDate').value;

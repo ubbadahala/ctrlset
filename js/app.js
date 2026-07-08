@@ -99,4 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('restTypeOverlay').addEventListener('click', e => {
     if (e.target.id === 'restTypeOverlay') dismissRestTypeModal();
   });
+
+  document.getElementById('repeatWorkoutOverlay').addEventListener('click', e => {
+    if (e.target.id === 'repeatWorkoutOverlay') dismissRepeatWorkoutModal();
+  });
 });
