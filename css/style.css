@@ -1575,6 +1575,7 @@ input, select, textarea {
     align-items: center;
     justify-content: flex-start;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 40px 20px 60px;
     opacity: 0;
     pointer-events: none;
