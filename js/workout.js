@@ -43,7 +43,7 @@ function addExerciseBlock(ex = {}) {
   // Auto-fill muscle if known
   if (ex.name) {
     setTimeout(() => {
-      onBlockNameInput(bid, ex.name);
+      applyExerciseAutoFill(bid, ex.name);
       onBlockMuscleChange(bid);
     }, 50);
   }
@@ -96,8 +96,14 @@ function removeExerciseBlock(bid) {
 function onBlockNameInput(bid, value) {
   const inputEl = document.querySelector(`#exb-${bid} [data-field="name"]`);
   if (inputEl) showExerciseSuggestions(inputEl, value);
+  applyExerciseAutoFill(bid, value);
+}
 
-  // Auto-fill muscle if exercise is in DB and muscle not set
+// Auto-fills the muscle group + refreshes deltas for a known exercise name.
+// Deliberately separate from showExerciseSuggestions so it can be called
+// programmatically (e.g. Repeat Workout, session restore) without popping
+// the suggestion dropdown open for a field the user never actually focused.
+function applyExerciseAutoFill(bid, value) {
   const val = value.trim().toLowerCase();
   if (!val) return;
   const match = exercisesDB.find(ex => ex.name.toLowerCase() === val);
