@@ -1296,6 +1296,69 @@ input, select, textarea {
 
   .history-peek-btn:hover { background: rgba(232, 255, 71, 0.1); }
 
+  /* ── EXERCISE NAME PICK-FROM-LIST DROPDOWN ── */
+  .exercise-suggestions {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: rgba(15, 15, 15, 0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    max-height: 220px;
+    overflow-y: auto;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  }
+  .exercise-suggestion-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: var(--text);
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+  .exercise-suggestion-item:last-child { border-bottom: none; }
+  .exercise-suggestion-item:hover,
+  .exercise-suggestion-item:active {
+    background: rgba(232, 255, 71, 0.1);
+  }
+  .exercise-suggestion-muscle {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .exercise-suggestion-empty {
+    padding: 12px 14px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .name-wrapper input.input-invalid {
+    border-color: #ff6b6b !important;
+  }
+  .exercise-name-warning {
+    font-size: 0.68rem;
+    color: #ff6b6b;
+    line-height: 1.4;
+    margin: 0 0 10px;
+    padding: 0 2px;
+  }
+  .exercise-name-warning a {
+    color: #ff9f9f;
+    text-decoration: underline;
+  }
+
   /* CONFETTI ANIMATION FOR VOLUME PR */
   @keyframes confetti-fall {
     0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }

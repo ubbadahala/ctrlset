@@ -14,8 +14,11 @@ function addExerciseBlock(ex = {}) {
     <div class="exercise-block-header">
       <div class="name-wrapper" style="position:relative;">
         <input type="text" placeholder="Exercise name" value="${ex.name || ''}"
-          data-block="${bid}" data-field="name" list="exercise-db" autocomplete="off"
-          oninput="onBlockNameInput(${bid}, this.value)">
+          data-block="${bid}" data-field="name" autocomplete="off"
+          oninput="onBlockNameInput(${bid}, this.value)"
+          onfocus="onBlockNameInput(${bid}, this.value)"
+          onkeydown="onExerciseNameKeydown(event, this)"
+          onblur="validateExerciseNameField(this)">
         <button class="history-peek-btn" onclick="peekHistoryBlock(${bid})">LOGS</button>
       </div>
       <div class="muscle-select-wrap">
@@ -91,6 +94,9 @@ function removeExerciseBlock(bid) {
 }
 
 function onBlockNameInput(bid, value) {
+  const inputEl = document.querySelector(`#exb-${bid} [data-field="name"]`);
+  if (inputEl) showExerciseSuggestions(inputEl, value);
+
   // Auto-fill muscle if exercise is in DB and muscle not set
   const val = value.trim().toLowerCase();
   if (!val) return;
@@ -107,6 +113,136 @@ function onBlockNameInput(bid, value) {
 
 function onBlockMuscleChange(bid) {
   // Just re-run delta so colour can update
+}
+
+// Same behavior as onBlockNameInput, but scoped to the edit-workout modal's
+// blocks, which aren't keyed by the main logging flow's `bid` selectors.
+function onEditBlockNameInput(inputEl) {
+  showExerciseSuggestions(inputEl, inputEl.value);
+
+  const val = inputEl.value.trim().toLowerCase();
+  if (!val) return;
+  const match = exercisesDB.find(ex => ex.name.toLowerCase() === val);
+  if (!match || !match.muscle) return;
+  const block = inputEl.closest('.exercise-block');
+  const sel = block?.querySelector('[data-field="muscle"]');
+  if (sel && !sel.value) sel.value = match.muscle;
+}
+
+// ── EXERCISE NAME PICK-FROM-LIST BEHAVIOR ──
+// Shared by both the main logging block and the edit-workout modal block.
+// Free typing still works (it filters/searches), but the final value is
+// validated on blur against exercisesDB so typos don't silently become
+// new, unmatched exercise names.
+
+function showExerciseSuggestions(inputEl, query) {
+  clearExerciseNameWarning(inputEl);
+  const wrapper = inputEl.closest('.name-wrapper');
+  if (!wrapper) return;
+  let dropdown = wrapper.querySelector('.exercise-suggestions');
+  if (!dropdown) {
+    dropdown = document.createElement('div');
+    dropdown.className = 'exercise-suggestions';
+    wrapper.appendChild(dropdown);
+  }
+
+  const q = (query || '').trim().toLowerCase();
+  const matches = (q
+    ? exercisesDB.filter(ex => ex.name.toLowerCase().includes(q))
+    : exercisesDB
+  ).slice(0, 8);
+
+  if (!matches.length) {
+    dropdown.innerHTML = q
+      ? `<div class="exercise-suggestion-empty">No match for "${escapeHtml(query.trim())}" — add it in Settings first</div>`
+      : `<div class="exercise-suggestion-empty">No exercises yet — add some in Settings</div>`;
+    dropdown.style.display = 'block';
+    return;
+  }
+
+  dropdown.innerHTML = matches.map(ex => `
+    <div class="exercise-suggestion-item" onmousedown="event.preventDefault(); selectExerciseSuggestion(this)" data-name="${escapeHtml(ex.name)}">
+      <span>${escapeHtml(ex.name)}</span>
+      ${ex.muscle ? `<span class="exercise-suggestion-muscle">${escapeHtml(ex.muscle)}</span>` : ''}
+    </div>
+  `).join('');
+  dropdown.style.display = 'block';
+}
+
+function hideExerciseSuggestions(inputEl) {
+  const dropdown = inputEl.closest('.name-wrapper')?.querySelector('.exercise-suggestions');
+  if (dropdown) dropdown.style.display = 'none';
+}
+
+function selectExerciseSuggestion(itemEl) {
+  const wrapper = itemEl.closest('.name-wrapper');
+  const input = wrapper?.querySelector('[data-field="name"]');
+  if (!input) return;
+
+  input.value = itemEl.dataset.name;
+  hideExerciseSuggestions(input);
+  clearExerciseNameWarning(input);
+
+  // Setting .value directly doesn't fire 'input', so trigger it manually to
+  // re-run muscle autofill / delta refresh wired to the input's own handler.
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.focus();
+}
+
+function onExerciseNameKeydown(e, inputEl) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const firstItem = inputEl.closest('.name-wrapper')?.querySelector('.exercise-suggestion-item');
+  if (firstItem) selectExerciseSuggestion(firstItem);
+  else inputEl.blur(); // no match — triggers validation warning
+}
+
+function validateExerciseNameField(inputEl) {
+  // Small delay so a suggestion click (onmousedown) registers before we
+  // validate and hide the dropdown on blur.
+  setTimeout(() => {
+    hideExerciseSuggestions(inputEl);
+
+    const val = inputEl.value.trim();
+    if (!val) { clearExerciseNameWarning(inputEl); return; }
+
+    const isKnown = exercisesDB.some(ex => ex.name.toLowerCase() === val.toLowerCase());
+    if (isKnown) clearExerciseNameWarning(inputEl);
+    else showExerciseNameWarning(inputEl, val);
+  }, 150);
+}
+
+function showExerciseNameWarning(inputEl, val) {
+  inputEl.classList.add('input-invalid');
+  const block = inputEl.closest('.exercise-block');
+  const header = inputEl.closest('.exercise-block-header');
+  if (!block || !header) return;
+
+  let warn = block.querySelector('.exercise-name-warning');
+  if (!warn) {
+    warn = document.createElement('div');
+    warn.className = 'exercise-name-warning';
+    header.insertAdjacentElement('afterend', warn);
+  }
+  warn.innerHTML = `"${escapeHtml(val)}" isn't in your list — <a href="#" onmousedown="event.preventDefault(); goAddExerciseInSettings('${escapeHtml(val).replace(/'/g, "\\'")}')">add it in Settings</a> first`;
+}
+
+function clearExerciseNameWarning(inputEl) {
+  inputEl.classList.remove('input-invalid');
+  const warn = inputEl.closest('.exercise-block')?.querySelector('.exercise-name-warning');
+  if (warn) warn.remove();
+}
+
+function goAddExerciseInSettings(name) {
+  const settingsTabBtn = document.querySelector('.tab[onclick*="settings"]');
+  switchTab('settings', settingsTabBtn);
+  setTimeout(() => {
+    const input = document.getElementById('newExerciseInput');
+    if (!input) return;
+    input.value = name;
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    input.focus();
+  }, 100);
 }
 
 function logSetLoad(bid, lid) {
@@ -331,6 +467,20 @@ function loadRepeatWorkout() {
   }
 }
 
+function getUnknownExerciseNames(names) {
+  const unique = [...new Set(names.filter(Boolean))];
+  return unique.filter(n => !exercisesDB.some(ex => ex.name.toLowerCase() === n.toLowerCase()));
+}
+
+function flagUnknownExerciseInputs(containerSelector, unknownNames) {
+  document.querySelectorAll(`${containerSelector} [data-field="name"]`).forEach(input => {
+    const val = input.value.trim();
+    if (val && unknownNames.some(n => n.toLowerCase() === val.toLowerCase())) {
+      showExerciseNameWarning(input, val);
+    }
+  });
+}
+
 async function saveWorkout(durationMins) {
   const name = document.getElementById('wName').value.trim();
   const date = document.getElementById('wDate').value;
@@ -338,6 +488,12 @@ async function saveWorkout(durationMins) {
   const exercises = collectExercises();
   if (exercises.some(e => !e.name)) return toast('Please name all your exercises before saving!');
   if (!exercises.length) return toast('Add at least one exercise!');
+
+  const unknownNames = getUnknownExerciseNames(exercises.map(e => e.name));
+  if (unknownNames.length) {
+    flagUnknownExerciseInputs('#exercisesList', unknownNames);
+    return toast(`Add "${unknownNames.join('", "')}" in Settings before saving.`);
+  }
 
   if (!currentUser) return toast('Not logged in!');
   toast('Saving to cloud... ☁️');
@@ -497,7 +653,11 @@ function addEditExerciseBlock(group = {}) {
     <div class="exercise-block-header">
       <div class="name-wrapper" style="position:relative;">
         <input type="text" placeholder="Exercise name" value="${group.name || ''}"
-          data-field="name" list="exercise-db" autocomplete="off" style="margin-bottom:0;">
+          data-field="name" autocomplete="off" style="margin-bottom:0;"
+          oninput="onEditBlockNameInput(this)"
+          onfocus="onEditBlockNameInput(this)"
+          onkeydown="onExerciseNameKeydown(event, this)"
+          onblur="validateExerciseNameField(this)">
       </div>
       <div class="muscle-select-wrap">
         <select data-field="muscle" style="font-size:0.78rem;padding:10px 8px;margin-bottom:0;">
@@ -567,6 +727,13 @@ async function saveEditedWorkout() {
   });
 
   if (!exercises.length) return toast('Add at least one valid load entry!');
+
+  const unknownNames = getUnknownExerciseNames(exercises.map(e => e.name));
+  if (unknownNames.length) {
+    flagUnknownExerciseInputs('#editExercisesList', unknownNames);
+    return toast(`Add "${unknownNames.join('", "')}" in Settings before saving.`);
+  }
+
   toast('Updating cloud... ☁️');
 
   try {

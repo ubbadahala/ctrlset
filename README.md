@@ -21,6 +21,7 @@ CtrlSet is a lightning-fast, Single Page Application (SPA) built for tracking wo
 * **Recovery Reminder:** A dismissible banner nudges you on the Log page if recovery hasn't been logged today or in several days.
 * **Loading Skeletons:** All Progress page cards (heatmap, PRs, radar, strength, bodyweight, volume chart) now show skeleton loaders during initial cloud sync instead of flashing empty.
 * **Exercise Rename & Merge:** Renaming an exercise in Settings now offers to propagate the change across past workout history too, so search/PRs/strength charts don't carry a typo forever. Renaming onto an existing exercise name merges the two instead of blocking with a "name already exists" error.
+* **Pick-From-List Exercise Names:** The exercise name field (in both the main logging form and the History edit-workout modal) is now a searchable pick-list instead of free text with a datalist. Typing filters your existing exercises live with muscle group shown per match; typing something that doesn't match flags the field and offers a direct link to add it in Settings first. Saving is blocked if any exercise name still doesn't match a known exercise, preventing typos from becoming silent duplicate entries.
 
 ### 🔁 Repeat Workout
 * A "Repeat Workout" button next to the Workout Name field opens a picker of past workout names (most recently used first). Selecting one clones that workout's exercises, sets, and reps into a new draft — weights start blank so today's numbers are entered fresh rather than silently carried over from last time.
