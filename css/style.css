@@ -1143,6 +1143,62 @@ input, select, textarea {
   }
   .achievement-toast-badge .achievement-icon { font-size: 1.4rem; }
 
+  /* ── TRAINING DAY PICKER ── */
+  .day-picker {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .day-pill {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 10px 4px;
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .day-pill.active {
+    background: rgba(232, 255, 71, 0.14);
+    border-color: rgba(232, 255, 71, 0.4);
+    color: var(--accent);
+  }
+
+  /* ── PERIOD COMPARISON CARD ── */
+  .period-compare-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .period-compare-row:last-child { border-bottom: none; }
+  .period-compare-label {
+    font-size: 0.8rem;
+    color: var(--text);
+    flex: 1;
+  }
+  .period-compare-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-right: 14px;
+  }
+  .period-compare-delta {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    white-space: nowrap;
+    text-align: right;
+    min-width: 110px;
+  }
+  .period-compare-delta.up { color: var(--green, #44ff88); }
+  .period-compare-delta.down { color: #ff6b6b; }
+  .period-compare-delta.flat { color: var(--muted); }
+
   /* ── PLATEAU WATCH CARD ── */
   .stagnation-item {
     display: flex;

@@ -33,10 +33,18 @@ CtrlSet is a lightning-fast, Single Page Application (SPA) built for tracking wo
 ### ⚠️ Plateau Watch
 * Surfaces the app's existing stagnation-detection logic (previously only reachable via a manual "predict" button mid-workout) as a proactive Progress page card — any exercise stuck at the same weight for 3+ sessions is flagged with a suggested deload weight.
 
+### 📊 This Month vs Last Month
+* A period-over-period comparison card on the Progress page — Volume, Workouts, PRs Set, and Best Streak for the current calendar month against the previous one, each with a trend arrow and percentage change.
+
 ### 📴 PWA / Offline Support
 * **Installable:** Added a web app manifest and properly sized icons so CtrlSet can be installed to a home screen like a native app.
 * **Offline App Shell:** A service worker caches the app shell (HTML/CSS/JS/CDN libraries) so the app loads without a connection. Supabase API calls are explicitly excluded from caching so online/offline error handling still behaves correctly.
+* **Install Shortcuts:** Long-pressing the installed app icon offers "Start Workout" and "Log Recovery" shortcuts that jump straight to the relevant part of the app.
 * **Scope note:** this covers offline *loading* and installability, not offline *writes* — saving a workout still requires a connection. Draft autosave (localStorage) already works offline independent of this.
+
+### 🔔 Workout Reminders
+* Settings now has a day-of-week picker for "usual training days" plus an enable toggle. On a selected day, if a workout hasn't been logged yet, CtrlSet shows a browser notification nudging you to log one.
+* **Scope note:** this relies on the Notification API while the app is open or recently visited in a tab — there's no push server behind it, so it can't wake the app from fully closed/backgrounded on a schedule the way a native app's push notifications can.
 
 ## 🚀 The v4.0 Cloud Migration Updates
 
@@ -70,12 +78,3 @@ This major release transitions the application from local browser storage to a s
 * **Data Visualization:** Chart.js
 * **Export Generation:** html2canvas
 * **Offline Support:** Service Worker + Web App Manifest
-
-## 📋 Manual Setup Required
-
-The following schema change must be applied to your Supabase `rest_days` table to support Active/Complete rest day types:
-
-```sql
-ALTER TABLE rest_days ADD COLUMN rest_type text DEFAULT 'complete';
-```
-

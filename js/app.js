@@ -103,4 +103,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('repeatWorkoutOverlay').addEventListener('click', e => {
     if (e.target.id === 'repeatWorkoutOverlay') dismissRepeatWorkoutModal();
   });
+
+  // Handle PWA install shortcuts (manifest.json "shortcuts" -> ?action=...),
+  // letting a long-press on the home screen icon jump straight to a task.
+  const shortcutAction = new URLSearchParams(location.search).get('action');
+  if (shortcutAction === 'start-workout') {
+    setTimeout(() => document.getElementById('wName')?.focus(), 300);
+  } else if (shortcutAction === 'log-recovery') {
+    setTimeout(() => { if (typeof scrollToRecoveryForm === 'function') scrollToRecoveryForm(); }, 300);
+  }
+  if (shortcutAction) window.history.replaceState({}, '', location.pathname);
 });

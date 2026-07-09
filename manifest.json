@@ -21,5 +21,21 @@
       "type": "image/png",
       "purpose": "any"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Workout",
+      "short_name": "Workout",
+      "description": "Jump straight into logging a new workout",
+      "url": "/?action=start-workout",
+      "icons": [{ "src": "appicon/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Log Recovery",
+      "short_name": "Recovery",
+      "description": "Jump straight to today's recovery log",
+      "url": "/?action=log-recovery",
+      "icons": [{ "src": "appicon/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }

@@ -5,6 +5,8 @@ let recoveryLogs = [];
 let workouts = [];
 let restDays = []; 
 let weeklyTarget = parseInt(localStorage.getItem('ctrlset_weekly_target') || '0');
+let trainingDays = []; // array of day-of-week numbers (0=Sun..6=Sat)
+let remindersEnabled = false;
 
 let chartInstance = null;
 let strengthChartInstance = null;
@@ -123,6 +125,15 @@ async function syncDataFromSupabase() {
       // Apply Light Mode (Pass 'false' so we don't accidentally re-trigger a database save while loading)
       const isLight = settingsData.light_mode === '1';
       toggleLightMode(isLight, false); 
+
+      // Apply Workout Reminder settings
+      trainingDays = (settingsData.training_days || '').split(',').filter(Boolean).map(Number);
+      remindersEnabled = settingsData.reminders_enabled === '1';
+      const remindersToggle = document.getElementById('remindersToggle');
+      if (remindersToggle) remindersToggle.checked = remindersEnabled;
+      document.querySelectorAll('#trainingDayPicker .day-pill').forEach(pill => {
+        pill.classList.toggle('active', trainingDays.includes(parseInt(pill.dataset.day, 10)));
+      });
     }
 
     updateStats();
@@ -138,6 +149,7 @@ async function syncDataFromSupabase() {
     // (e.g. a restored draft's last-session bar / live deltas) recompute now.
     document.dispatchEvent(new CustomEvent('ctrlset:workoutsLoaded'));
     checkRecoveryReminder();
+    checkWorkoutReminder();
     renderProgress();
     renderHeatmap();
     renderRadarChart();

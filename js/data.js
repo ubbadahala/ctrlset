@@ -489,6 +489,94 @@ async function saveWeeklyTarget() {
   toast(val > 0 ? `Target set: ${val.toLocaleString()} kg/week 🎯` : 'Target cleared');
 }
 
+function toggleTrainingDay(pillEl) {
+  pillEl.classList.toggle('active');
+}
+
+async function onRemindersToggle(checked) {
+  if (!checked) return; // turning off doesn't need permission, just gets saved on next Save click
+
+  if (!('Notification' in window)) {
+    toast('Notifications aren\'t supported in this browser.');
+    document.getElementById('remindersToggle').checked = false;
+    return;
+  }
+
+  if (Notification.permission === 'granted') return;
+
+  const permission = await Notification.requestPermission();
+  if (permission !== 'granted') {
+    toast('Notification permission denied — reminders won\'t show.');
+    document.getElementById('remindersToggle').checked = false;
+  }
+}
+
+async function saveReminderSettings() {
+  const enabled = document.getElementById('remindersToggle').checked;
+  const selectedDays = [...document.querySelectorAll('#trainingDayPicker .day-pill.active')]
+    .map(pill => pill.dataset.day);
+
+  if (enabled && (!('Notification' in window) || Notification.permission !== 'granted')) {
+    toast('Enable notifications above first, then save.');
+    return;
+  }
+
+  remindersEnabled = enabled;
+  trainingDays = selectedDays.map(Number);
+
+  const hint = document.getElementById('remindersHint');
+  if (!currentUser) {
+    if (hint) hint.textContent = 'Log in to sync reminder settings.';
+    return;
+  }
+
+  try {
+    await supabaseClient.from('user_settings').upsert({
+      user_id: currentUser.id,
+      reminders_enabled: enabled ? '1' : '0',
+      training_days: selectedDays.join(',')
+    }, { onConflict: 'user_id' });
+    toast('Reminder settings saved ✓');
+    if (hint) hint.textContent = enabled
+      ? `Reminders on for ${selectedDays.length} day${selectedDays.length === 1 ? '' : 's'} a week.`
+      : 'Reminders off.';
+  } catch (err) {
+    console.error('Failed to save reminder settings:', err);
+    toast('Failed to save reminder settings.');
+  }
+}
+
+// Checks whether today is a usual training day, a workout hasn't been
+// logged yet today, and a reminder hasn't already fired today — then shows
+// a browser notification. This only works while the app is open/recently
+// visited in a tab; without a push server, browsers can't reliably wake a
+// closed app or background it on a schedule.
+function checkWorkoutReminder() {
+  if (!remindersEnabled || !trainingDays.length) return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+  const todayStr = getLocalDateString();
+  const todayDow = new Date().getDay();
+  if (!trainingDays.includes(todayDow)) return;
+
+  const alreadyLoggedToday = workouts.some(w => w.date === todayStr);
+  if (alreadyLoggedToday) return;
+
+  const dismissedFor = localStorage.getItem('ctrlset_workout_reminder_shown');
+  if (dismissedFor === todayStr) return;
+
+  const body = "It's one of your usual training days — log today's workout on CtrlSet.";
+  if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification('Time to train 💪', { body, icon: '/appicon/icon-192.png', tag: 'ctrlset-workout-reminder' });
+    }).catch(() => new Notification('Time to train 💪', { body, icon: '/appicon/icon-192.png' }));
+  } else {
+    new Notification('Time to train 💪', { body, icon: '/appicon/icon-192.png' });
+  }
+
+  localStorage.setItem('ctrlset_workout_reminder_shown', todayStr);
+}
+
 function updateWeeklyTargetBar() {
   const wrap = document.getElementById('weeklyTargetWrap');
   const hint = document.getElementById('weeklyTargetHint');

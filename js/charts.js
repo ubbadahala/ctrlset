@@ -489,8 +489,92 @@ function renderStagnationCard() {
   `).join('');
 }
 
+function getMonthBounds(monthOffset) {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + monthOffset + 1, 0);
+  return { start: getLocalDateString(start), end: getLocalDateString(end) };
+}
+
+function computePeriodStats(startDate, endDate) {
+  const periodWorkouts = workouts.filter(w => w.date >= startDate && w.date <= endDate);
+  const volume = periodWorkouts.reduce((sum, w) =>
+    sum + w.exercises.reduce((a, e) => a + e.sets * e.reps * e.weight, 0), 0);
+
+  // PR count within the period: seed max-per-exercise from everything
+  // BEFORE the period started, then count new maxes hit during it.
+  const priorWorkouts = workouts.filter(w => w.date < startDate).sort((a, b) => new Date(a.date) - new Date(b.date));
+  const maxByExercise = {};
+  priorWorkouts.forEach(w => {
+    w.exercises.forEach(e => {
+      const key = e.name.toLowerCase();
+      if (!maxByExercise[key] || e.weight > maxByExercise[key]) maxByExercise[key] = e.weight;
+    });
+  });
+
+  let prCount = 0;
+  [...periodWorkouts].sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(w => {
+    const bestPerExercise = {};
+    w.exercises.forEach(e => {
+      const key = e.name.toLowerCase();
+      if (!bestPerExercise[key] || e.weight > bestPerExercise[key].weight) bestPerExercise[key] = e;
+    });
+    Object.entries(bestPerExercise).forEach(([key, e]) => {
+      if (!maxByExercise[key] || e.weight > maxByExercise[key]) {
+        maxByExercise[key] = e.weight;
+        prCount++;
+      }
+    });
+  });
+
+  // Best streak within the period (workouts + rest days, clipped to range)
+  const datesInPeriod = new Set();
+  periodWorkouts.forEach(w => datesInPeriod.add(w.date));
+  restDays.filter(r => r.date >= startDate && r.date <= endDate).forEach(r => datesInPeriod.add(r.date));
+  const bestStreak = computeBestStreakFromDates(datesInPeriod);
+
+  return { volume, workoutCount: periodWorkouts.length, prCount, bestStreak };
+}
+
+function renderPeriodComparison() {
+  const listEl = document.getElementById('periodComparisonList');
+  const skeleton = document.getElementById('periodComparisonSkeleton');
+  if (!listEl) return;
+  if (skeleton) skeleton.style.display = 'none';
+  listEl.style.display = '';
+
+  const thisMonth = getMonthBounds(0);
+  const lastMonth = getMonthBounds(-1);
+  const current = computePeriodStats(thisMonth.start, thisMonth.end);
+  const previous = computePeriodStats(lastMonth.start, lastMonth.end);
+
+  const rows = [
+    { label: 'Volume', suffix: 'kg', current: current.volume, previous: previous.volume },
+    { label: 'Workouts', suffix: '', current: current.workoutCount, previous: previous.workoutCount },
+    { label: 'PRs Set', suffix: '', current: current.prCount, previous: previous.prCount },
+    { label: 'Best Streak', suffix: 'd', current: current.bestStreak, previous: previous.bestStreak }
+  ];
+
+  listEl.innerHTML = rows.map(r => {
+    const diff = r.current - r.previous;
+    const pct = r.previous > 0 ? Math.round((diff / r.previous) * 100) : (r.current > 0 ? 100 : 0);
+    const trend = diff === 0 ? 'flat' : (diff > 0 ? 'up' : 'down');
+    const arrow = trend === 'flat' ? '→' : (trend === 'up' ? '▲' : '▼');
+    const deltaText = trend === 'flat' ? 'Same as last month' : `${arrow} ${Math.abs(pct)}% vs last month`;
+    const displayValue = r.suffix === 'kg' ? Math.round(r.current).toLocaleString() : r.current;
+
+    return `
+      <div class="period-compare-row">
+        <div class="period-compare-label">${r.label}</div>
+        <div class="period-compare-value">${displayValue}${r.suffix}</div>
+        <div class="period-compare-delta ${trend}">${deltaText}</div>
+      </div>`;
+  }).join('');
+}
+
 function renderProgress() {
   renderAchievements();
+  renderPeriodComparison();
   renderPRs();
   renderStagnationCard();
   renderChart();

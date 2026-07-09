@@ -262,6 +262,12 @@
       <div class="achievements-grid" id="achievementsGrid" style="display:none;"></div>
     </div>
 
+    <div class="card glass-panel" style="margin-bottom:24px;">
+      <div class="card-title">This Month vs Last Month</div>
+      <div class="skeleton skeleton-card" id="periodComparisonSkeleton" style="height:160px;"></div>
+      <div id="periodComparisonList" style="display:none;"></div>
+    </div>
+
     <div class="card glass-panel">
       <div class="card-title">Training Consistency</div>
       <p style="font-size: 0.7rem; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">Intensity based on total daily volume (Last 90 Days)</p>
@@ -394,6 +400,32 @@
         <button class="btn btn-primary" style="width:auto;padding:10px 18px;white-space:nowrap;" onclick="saveWeeklyTarget()">Save</button>
       </div>
       <div id="weeklyTargetHint" style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);margin-top:8px;"></div>
+    </div>
+
+    <div class="card glass-panel">
+      <div class="card-title">Workout Reminders</div>
+      <p style="font-size:0.85rem;color:var(--text);opacity:0.8;margin-bottom:14px;">Get a browser notification on your usual training days if you haven't logged a workout yet. Notifications only fire while CtrlSet is open in a tab or recently visited — this isn't a server push, so it can't wake your phone from a closed app.</p>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;margin-bottom:14px;">
+        <div style="font-size:0.9rem;color:var(--text);">Enable Reminders</div>
+        <label class="switch">
+          <input type="checkbox" id="remindersToggle" onchange="onRemindersToggle(this.checked)">
+          <span class="slider-round"></span>
+        </label>
+      </div>
+
+      <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Usual Training Days</div>
+      <div class="day-picker" id="trainingDayPicker">
+        <button type="button" class="day-pill" data-day="0" onclick="toggleTrainingDay(this)">Sun</button>
+        <button type="button" class="day-pill" data-day="1" onclick="toggleTrainingDay(this)">Mon</button>
+        <button type="button" class="day-pill" data-day="2" onclick="toggleTrainingDay(this)">Tue</button>
+        <button type="button" class="day-pill" data-day="3" onclick="toggleTrainingDay(this)">Wed</button>
+        <button type="button" class="day-pill" data-day="4" onclick="toggleTrainingDay(this)">Thu</button>
+        <button type="button" class="day-pill" data-day="5" onclick="toggleTrainingDay(this)">Fri</button>
+        <button type="button" class="day-pill" data-day="6" onclick="toggleTrainingDay(this)">Sat</button>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="saveReminderSettings()">Save Reminder Settings</button>
+      <div id="remindersHint" style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);margin-top:8px;"></div>
     </div>
 
     <div class="card glass-panel">
