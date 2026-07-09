@@ -4,7 +4,7 @@
 // requires being online. Draft autosave (localStorage) already works
 // offline on its own, independent of this file.
 
-const CACHE_VERSION = 'ctrlset-v1';
+const CACHE_VERSION = 'ctrlset-v2';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -16,6 +16,7 @@ const APP_SHELL = [
   '/js/ui.js',
   '/js/timers.js',
   '/js/data.js',
+  '/js/push.js',
   '/js/workout.js',
   '/js/charts.js',
   '/js/history.js',
@@ -42,6 +43,24 @@ self.addEventListener('activate', (event) => {
       Promise.all(keys.filter(k => k !== CACHE_VERSION).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
+});
+
+self.addEventListener('push', (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (e) { /* non-JSON payload, use defaults */ }
+
+  const title = data.title || 'Time to train 💪';
+  const options = {
+    body: data.body || "It's one of your usual training days — log today's workout on CtrlSet.",
+    icon: '/appicon/icon-192.png',
+    badge: '/appicon/icon-192.png',
+    // Same tag as the in-app same-tab fallback notification (checkWorkoutReminder
+    // in data.js), so if both happen to fire, the second one replaces rather
+    // than stacking as a duplicate.
+    tag: 'ctrlset-workout-reminder'
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener('notificationclick', (event) => {

@@ -521,6 +521,13 @@ async function saveReminderSettings() {
     return;
   }
 
+  if (enabled) {
+    const subscribed = await subscribeToPush();
+    if (!subscribed) return; // subscribeToPush() already toasts the failure reason
+  } else {
+    await unsubscribeFromPush();
+  }
+
   remindersEnabled = enabled;
   trainingDays = selectedDays.map(Number);
 
