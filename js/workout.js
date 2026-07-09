@@ -125,7 +125,10 @@ function onBlockMuscleChange(bid) {
 // blocks, which aren't keyed by the main logging flow's `bid` selectors.
 function onEditBlockNameInput(inputEl) {
   showExerciseSuggestions(inputEl, inputEl.value);
+  applyEditExerciseAutoFill(inputEl);
+}
 
+function applyEditExerciseAutoFill(inputEl) {
   const val = inputEl.value.trim().toLowerCase();
   if (!val) return;
   const match = exercisesDB.find(ex => ex.name.toLowerCase() === val);
@@ -189,10 +192,16 @@ function selectExerciseSuggestion(itemEl) {
   hideExerciseSuggestions(input);
   clearExerciseNameWarning(input);
 
-  // Setting .value directly doesn't fire 'input', so trigger it manually to
-  // re-run muscle autofill / delta refresh wired to the input's own handler.
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-  input.focus();
+  // Apply muscle-fill/delta refresh directly rather than dispatching a
+  // synthetic 'input' event — dispatching would re-run the same oninput
+  // handler that calls showExerciseSuggestions(), popping the dropdown
+  // right back open immediately after we just closed it. (input.focus()
+  // is intentionally skipped for the same reason — it re-triggers onfocus.
+  // The field never actually lost focus: the suggestion item's mousedown
+  // handler already calls preventDefault() to stop that from happening.)
+  const bid = input.dataset.block;
+  if (bid) applyExerciseAutoFill(bid, input.value);
+  else applyEditExerciseAutoFill(input);
 }
 
 function onExerciseNameKeydown(e, inputEl) {
