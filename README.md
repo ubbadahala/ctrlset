@@ -11,7 +11,7 @@ For the detailed, dated history of every update, see **[CHANGELOG.md](./CHANGELO
 * **Recovery tracking** — sleep, protein, bodyweight, supplements, and soreness, with reminders if you fall behind
 * **Rest day logging** — Active Rest or Complete Rest, editable after the fact
 * **History** — searchable, filterable by muscle group and date range, with an editable detail view per workout
-* **Progress dashboards** — training consistency heatmap, personal records, muscle group distribution, strength-over-time, bodyweight trend, and a month-over-month comparison card
+* **Progress dashboards** — training consistency heatmap, personal records, muscle group distribution, strength-over-time, bodyweight trend, and a month-over-month comparison card — with a one-tap **Share Progress** poster export
 * **Plateau Watch** — proactively flags any exercise stuck at the same weight for 3+ sessions with a suggested deload
 * **Achievements** — 15 badges across workout count, streaks, lifetime volume, and PR milestones, unlocked in real time
 * **Workout Reminders** — real push notifications (wakes a closed app/browser) on your usual training days if you haven't logged yet

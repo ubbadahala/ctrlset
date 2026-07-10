@@ -737,6 +737,97 @@ function closeRecapAndGoHistory() {
   switchTab('history', document.querySelector('.tab:nth-child(2)'));
 }
 
+function shareProgress() {
+  toast('Generating poster... ⏳');
+
+  const node = document.getElementById('share-node');
+  const { start, end } = getMonthBounds(0);
+  const stats = computePeriodStats(start, end);
+  const prs = getPRsInPeriod(start, end);
+  const achievements = computeAchievements();
+  const unlockedCount = achievements.filter(a => a.unlocked).length;
+  const monthLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  // Adapt colors based on Light/Dark mode for the poster output
+  const isLight = document.body.classList.contains('light-mode');
+  const bgGrid = isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.02)';
+  const bgColor = isLight ? '#f2f2f0' : '#050505';
+  const cardBg = isLight ? 'rgba(255,255,255,0.8)' : 'rgba(20,20,20,0.8)';
+  const textColor = isLight ? '#111' : '#f0f0f0';
+  const mutedColor = isLight ? '#777' : '#888';
+  const borderColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+
+  node.innerHTML = `
+    <div class="share-content" style="background-color: ${bgColor}; background-image: radial-gradient(circle at 15% 50%, rgba(232,255,71,0.08), transparent 40%), radial-gradient(circle at 85% 30%, rgba(255,107,53,0.08), transparent 40%), linear-gradient(${bgGrid} 1px, transparent 1px), linear-gradient(90deg, ${bgGrid} 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px; padding: 40px; border-radius: 20px;">
+
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 30px;">
+        <div>
+          <div style="font-family:'Bebas Neue', sans-serif; font-size:3.5rem; letter-spacing:0.08em; color:var(--accent); margin-bottom:5px; line-height:1; text-shadow: 0 0 20px rgba(232,255,71,0.2);">
+            Ctrl<span style="color:${textColor}">Set</span>
+          </div>
+          <div style="font-family:'DM Mono', monospace; font-size:0.85rem; letter-spacing:0.1em; color:${mutedColor}; text-transform:uppercase;">
+            Progress Report — ${escapeHtml(monthLabel)}
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:16px; margin-bottom:30px;">
+        <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:16px; padding:20px; flex:1; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), transparent);"></div>
+          <div style="font-family:'DM Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:8px;">VOLUME</div>
+          <div style="font-family:'Bebas Neue', sans-serif; font-size:2rem; color:var(--accent); line-height:1;">${Math.round(stats.volume).toLocaleString()} KG</div>
+        </div>
+        <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:16px; padding:20px; flex:1; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), transparent);"></div>
+          <div style="font-family:'DM Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:8px;">WORKOUTS</div>
+          <div style="font-family:'Bebas Neue', sans-serif; font-size:2rem; color:${textColor}; line-height:1;">${stats.workoutCount}</div>
+        </div>
+        <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:16px; padding:20px; flex:1; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), transparent);"></div>
+          <div style="font-family:'DM Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:8px;">BEST STREAK</div>
+          <div style="font-family:'Bebas Neue', sans-serif; font-size:2rem; color:${textColor}; line-height:1;">${stats.bestStreak}D</div>
+        </div>
+      </div>
+
+      ${prs.length ? `
+      <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:20px; padding:24px; margin-bottom:20px;">
+        <div style="font-family:'DM Mono', monospace; font-size:0.75rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:16px; border-bottom:1px solid ${borderColor}; padding-bottom:12px;">🏆 PRs THIS MONTH</div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          ${prs.map(pr => `
+            <span style="font-family:'DM Mono', monospace; font-size:0.85rem; color:var(--accent); background:rgba(232,255,71,0.1); padding:6px 12px; border-radius:6px; border:1px solid rgba(232,255,71,0.2);">
+              ${escapeHtml(pr.name)} <strong style="font-weight:700;">${pr.weight}kg</strong>
+            </span>
+          `).join('')}
+        </div>
+      </div>` : ''}
+
+      <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:16px; padding:18px 24px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-family:'DM Mono', monospace; font-size:0.8rem; letter-spacing:0.05em; color:${mutedColor};">🏅 ACHIEVEMENTS UNLOCKED</span>
+        <span style="font-family:'Bebas Neue', sans-serif; font-size:1.6rem; color:var(--accent);">${unlockedCount}/${achievements.length}</span>
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    html2canvas(node.querySelector('.share-content'), {
+      backgroundColor: null,
+      scale: 2,
+      logging: false,
+      useCORS: true
+    }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `ctrlset-progress-${getLocalDateString()}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      link.click();
+      toast('Poster saved! Ready for Instagram. 📸');
+      node.innerHTML = '';
+    }).catch(err => {
+      console.error(err);
+      toast('Failed to generate image.');
+    });
+  }, 150);
+}
+
 function shareWorkout(id) {
   const w = workouts.find(x => x.id === id);
   if (!w) return;

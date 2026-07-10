@@ -2,6 +2,10 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Share Progress
+
+* Added a "📸 Share" button on the "This Month vs Last Month" Progress card. Generates a downloadable poster image (same style as the existing workout-recap share) summarizing the current calendar month: total volume, workout count, best streak, any PRs hit this month, and total achievements unlocked — reuses the existing `html2canvas` pipeline and off-screen share-card container rather than introducing new rendering machinery.
+
 ## Codebase Health Pass
 
 * **Docs split:** Moved the detailed, dated feature history out of `README.md` into this file, so the README stays a clean product overview instead of a growing log.

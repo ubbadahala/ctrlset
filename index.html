@@ -263,7 +263,10 @@
     </div>
 
     <div class="card glass-panel" style="margin-bottom:24px;">
-      <div class="card-title">This Month vs Last Month</div>
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>This Month vs Last Month</span>
+        <button class="btn-icon" style="width:auto;height:auto;padding:6px 12px;margin:0;font-size:0.7rem;" onclick="shareProgress()" title="Share as image">📸 Share</button>
+      </div>
       <div class="skeleton skeleton-card" id="periodComparisonSkeleton" style="height:160px;"></div>
       <div id="periodComparisonList" style="display:none;"></div>
     </div>
