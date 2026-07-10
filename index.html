@@ -53,6 +53,14 @@
 
   <div class="view active" id="view-log">
 
+    <div class="readiness-card" id="readinessCard" style="display:none;">
+      <div class="readiness-header">
+        <span class="readiness-icon" id="readinessIcon">💪</span>
+        <span class="readiness-label" id="readinessLabel">Fresh</span>
+      </div>
+      <div class="readiness-reasons" id="readinessReasons"></div>
+    </div>
+
     <div class="recovery-reminder-banner" id="recoveryReminderBanner" style="display:none;" onclick="scrollToRecoveryForm(event)">
       <span id="recoveryReminderText"></span>
       <button class="recovery-reminder-dismiss" onclick="dismissRecoveryReminder(event)" title="Dismiss">✕</button>
@@ -273,7 +281,10 @@
     </div>
 
     <div class="card glass-panel" style="margin-bottom:24px;">
-      <div class="card-title">This Month vs Last Month</div>
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>This Month vs Last Month</span>
+        <button class="btn-icon" style="width:auto;height:auto;padding:6px 12px;margin:0;font-size:0.7rem;" onclick="shareProgress()" title="Share as image">📸 Share</button>
+      </div>
       <div class="skeleton skeleton-card" id="periodComparisonSkeleton" style="height:160px;"></div>
       <div id="periodComparisonList" style="display:none;"></div>
     </div>
@@ -759,6 +770,20 @@
     <div class="confirm-actions" style="display:flex; flex-direction:column; gap:10px;">
       <button class="confirm-btn confirm-btn-ok" style="width:100%;" onclick="loadRepeatWorkout()">Load Workout</button>
       <button class="confirm-btn confirm-btn-cancel" style="width:100%;" onclick="dismissRepeatWorkoutModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── INJURY FLAG DIALOG ── -->
+<div class="confirm-overlay" id="injuryNoteOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">⚠️</div>
+    <div class="confirm-title">Flag an Injury Concern</div>
+    <div class="confirm-body">You'll see a gentle warning whenever you log this exercise. Leave blank and save to clear an existing flag.</div>
+    <textarea id="injuryNoteInput" placeholder="e.g. Aggravates my shoulder — go light or skip" rows="3" style="margin-bottom:16px;"></textarea>
+    <div class="confirm-actions" style="display:flex; flex-direction:column; gap:10px;">
+      <button class="confirm-btn confirm-btn-ok" style="width:100%;" onclick="saveInjuryNote()">Save</button>
+      <button class="confirm-btn confirm-btn-cancel" style="width:100%;" onclick="dismissInjuryNoteModal()">Cancel</button>
     </div>
   </div>
 </div>

@@ -104,6 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.id === 'repeatWorkoutOverlay') dismissRepeatWorkoutModal();
   });
 
+  document.getElementById('injuryNoteOverlay').addEventListener('click', e => {
+    if (e.target.id === 'injuryNoteOverlay') dismissInjuryNoteModal();
+  });
+
   // Handle PWA install shortcuts (manifest.json "shortcuts" -> ?action=...),
   // letting a long-press on the home screen icon jump straight to a task.
   const shortcutAction = new URLSearchParams(location.search).get('action');

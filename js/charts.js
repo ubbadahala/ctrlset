@@ -536,6 +536,37 @@ function computePeriodStats(startDate, endDate) {
   return { volume, workoutCount: periodWorkouts.length, prCount, bestStreak };
 }
 
+// Same PR-detection logic as computePeriodStats(), but returns the actual
+// PR events (exercise, weight, date) instead of just a count — used by the
+// Share Progress poster to highlight what was actually hit this month.
+function getPRsInPeriod(startDate, endDate) {
+  const priorWorkouts = workouts.filter(w => w.date < startDate).sort((a, b) => new Date(a.date) - new Date(b.date));
+  const maxByExercise = {};
+  priorWorkouts.forEach(w => {
+    w.exercises.forEach(e => {
+      const key = e.name.toLowerCase();
+      if (!maxByExercise[key] || e.weight > maxByExercise[key]) maxByExercise[key] = e.weight;
+    });
+  });
+
+  const periodWorkouts = workouts.filter(w => w.date >= startDate && w.date <= endDate).sort((a, b) => new Date(a.date) - new Date(b.date));
+  const prs = [];
+  periodWorkouts.forEach(w => {
+    const bestPerExercise = {};
+    w.exercises.forEach(e => {
+      const key = e.name.toLowerCase();
+      if (!bestPerExercise[key] || e.weight > bestPerExercise[key].weight) bestPerExercise[key] = e;
+    });
+    Object.entries(bestPerExercise).forEach(([key, e]) => {
+      if (!maxByExercise[key] || e.weight > maxByExercise[key]) {
+        maxByExercise[key] = e.weight;
+        prs.push({ name: e.name, muscle: e.muscle, weight: e.weight, date: w.date });
+      }
+    });
+  });
+  return prs;
+}
+
 function renderPeriodComparison() {
   const listEl = document.getElementById('periodComparisonList');
   const skeleton = document.getElementById('periodComparisonSkeleton');

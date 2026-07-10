@@ -104,9 +104,18 @@ function onBlockNameInput(bid, value) {
 // programmatically (e.g. Repeat Workout, session restore) without popping
 // the suggestion dropdown open for a field the user never actually focused.
 function applyExerciseAutoFill(bid, value) {
+  const inputEl = document.querySelector(`#exb-${bid} [data-field="name"]`);
   const val = value.trim().toLowerCase();
-  if (!val) return;
+
+  if (!val) { if (inputEl) clearInjuryWarning(inputEl); return; }
+
   const match = exercisesDB.find(ex => ex.name.toLowerCase() === val);
+
+  if (inputEl) {
+    if (match && match.injuryNote) showInjuryWarning(inputEl, match.injuryNote);
+    else clearInjuryWarning(inputEl);
+  }
+
   if (!match || !match.muscle) return;
   const sel = document.querySelector(`#exb-${bid} [data-field="muscle"]`);
   if (sel && !sel.value) sel.value = match.muscle;
@@ -130,8 +139,12 @@ function onEditBlockNameInput(inputEl) {
 
 function applyEditExerciseAutoFill(inputEl) {
   const val = inputEl.value.trim().toLowerCase();
-  if (!val) return;
+  if (!val) { clearInjuryWarning(inputEl); return; }
   const match = exercisesDB.find(ex => ex.name.toLowerCase() === val);
+
+  if (match && match.injuryNote) showInjuryWarning(inputEl, match.injuryNote);
+  else clearInjuryWarning(inputEl);
+
   if (!match || !match.muscle) return;
   const block = inputEl.closest('.exercise-block');
   const sel = block?.querySelector('[data-field="muscle"]');
@@ -245,6 +258,29 @@ function showExerciseNameWarning(inputEl, val) {
 function clearExerciseNameWarning(inputEl) {
   inputEl.classList.remove('input-invalid');
   const warn = inputEl.closest('.exercise-block')?.querySelector('.exercise-name-warning');
+  if (warn) warn.remove();
+}
+
+// Shows a gentle caution (not an error/blocking state) when a selected
+// exercise has an injury note flagged in Settings. Inserted as a sibling of
+// the header row, same pattern as showExerciseNameWarning(), so it can
+// coexist without overlapping the Sets/Reps/Kg labels below.
+function showInjuryWarning(inputEl, note) {
+  const block = inputEl.closest('.exercise-block');
+  const header = inputEl.closest('.exercise-block-header');
+  if (!block || !header) return;
+
+  let warn = block.querySelector('.exercise-injury-warning');
+  if (!warn) {
+    warn = document.createElement('div');
+    warn.className = 'exercise-injury-warning';
+    header.insertAdjacentElement('afterend', warn);
+  }
+  warn.innerHTML = `⚠️ ${escapeHtml(note)}`;
+}
+
+function clearInjuryWarning(inputEl) {
+  const warn = inputEl.closest('.exercise-block')?.querySelector('.exercise-injury-warning');
   if (warn) warn.remove();
 }
 
@@ -576,6 +612,7 @@ async function saveWorkout(durationMins) {
     refreshWorkoutNameDB();
     renderHistory();
     checkForNewAchievements(previousUnlockedIds);
+    renderReadinessCard();
     if (isVolumePR) triggerConfetti();
     
     clearInterval(sessionClockInterval);
