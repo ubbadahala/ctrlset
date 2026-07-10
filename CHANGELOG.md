@@ -2,6 +2,11 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Readiness & Safety
+
+* **Daily Readiness Score:** A card at the top of the Log page reads today's (or yesterday's) sleep and soreness logs plus how many consecutive days you've trained without a break, and shows a simple Fresh/Moderate/Fatigued signal with plain-language reasons — rule-based and explainable rather than a black-box score. Stays hidden until there's enough data to say anything meaningful.
+* **Injury Flags:** Exercises in Settings can now be flagged with a note (e.g. "aggravates my shoulder"). Selecting that exercise while logging a workout — in either the main log form or the History edit modal — shows a gentle caution with the note, rather than relying on memory.
+
 ## Share Progress
 
 * Added a "📸 Share" button on the "This Month vs Last Month" Progress card. Generates a downloadable poster image (same style as the existing workout-recap share) summarizing the current calendar month: total volume, workout count, best streak, any PRs hit this month, and total achievements unlocked — reuses the existing `html2canvas` pipeline and off-screen share-card container rather than introducing new rendering machinery.

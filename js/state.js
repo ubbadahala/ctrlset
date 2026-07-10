@@ -106,7 +106,7 @@ async function syncDataFromSupabase() {
       .eq('user_id', currentUser.id);
       
     if (exData && exData.length > 0) {
-      exercisesDB = exData.map(ex => ({ id: ex.id, name: ex.name, muscle: ex.muscle_group }));
+      exercisesDB = exData.map(ex => ({ id: ex.id, name: ex.name, muscle: ex.muscle_group, injuryNote: ex.injury_note || '' }));
     }
 
     // 5. Fetch User Settings
@@ -150,6 +150,7 @@ async function syncDataFromSupabase() {
     document.dispatchEvent(new CustomEvent('ctrlset:workoutsLoaded'));
     checkRecoveryReminder();
     checkWorkoutReminder();
+    renderReadinessCard();
     renderProgress();
     renderHeatmap();
     renderRadarChart();

@@ -1232,6 +1232,97 @@ input, select, textarea {
     flex-shrink: 0;
   }
 
+  /* ── SETTINGS EXERCISE DATABASE ROW ── */
+  .settings-exercise-row {
+    display: grid;
+    grid-template-columns: 1fr 110px 36px 36px;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .settings-exercise-name,
+  .settings-exercise-muscle {
+    margin-bottom: 0 !important;
+    font-size: 0.9rem;
+    padding: 9px 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    width: 100%;
+  }
+  .settings-exercise-muscle { font-size: 0.8rem; padding: 9px 8px; }
+  .settings-exercise-actions {
+    display: contents; /* let the two buttons sit directly in the row grid on desktop */
+  }
+  .settings-exercise-actions .btn-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 600px) {
+    .settings-exercise-row {
+      grid-template-columns: 1fr;
+      gap: 6px;
+      padding: 10px 6px;
+    }
+    .settings-exercise-actions {
+      display: flex; /* stack select + buttons below the name on mobile instead of squeezing into one row */
+      gap: 8px;
+    }
+    .settings-exercise-muscle { flex: 1; }
+  }
+
+  /* ── DAILY READINESS CARD ── */
+  .readiness-card {
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    animation: fadeIn 0.3s ease;
+  }
+  .readiness-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .readiness-icon { font-size: 1.4rem; line-height: 1; }
+  .readiness-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.05em;
+  }
+  .readiness-reasons {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .readiness-card.readiness-fresh {
+    border-color: rgba(68, 255, 136, 0.25);
+    background: rgba(68, 255, 136, 0.05);
+  }
+  .readiness-card.readiness-fresh .readiness-label { color: var(--green, #44ff88); }
+
+  .readiness-card.readiness-moderate {
+    border-color: rgba(255, 179, 71, 0.3);
+    background: rgba(255, 179, 71, 0.05);
+  }
+  .readiness-card.readiness-moderate .readiness-label { color: #ffb347; }
+
+  .readiness-card.readiness-fatigued {
+    border-color: rgba(255, 107, 53, 0.35);
+    background: rgba(255, 107, 53, 0.06);
+  }
+  .readiness-card.readiness-fatigued .readiness-label { color: #ff6b35; }
+
   /* ── RECOVERY REMINDER BANNER ── */
   .recovery-reminder-banner {
     background: rgba(68, 255, 136, 0.08);
@@ -1413,6 +1504,17 @@ input, select, textarea {
   .exercise-name-warning a {
     color: #ff9f9f;
     text-decoration: underline;
+  }
+
+  .exercise-injury-warning {
+    font-size: 0.68rem;
+    color: #ff6b35;
+    line-height: 1.4;
+    margin: 0 0 10px;
+    padding: 6px 10px;
+    background: rgba(255, 107, 53, 0.08);
+    border: 1px solid rgba(255, 107, 53, 0.25);
+    border-radius: 8px;
   }
 
   /* CONFETTI ANIMATION FOR VOLUME PR */

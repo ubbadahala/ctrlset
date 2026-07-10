@@ -52,16 +52,17 @@ function loadFile(sandbox, relativePath) {
   vm.runInContext(code, sandbox, { filename: relativePath });
 }
 
-// Returns a fresh sandbox with utils.js, achievements.js, and charts.js
-// loaded — enough for testing calculate1RM, isStagnant,
-// computeBestStreakFromDates, computeAchievements, getMonthBounds, and
-// computePeriodStats. Fresh per call so tests don't leak state into
-// each other via ACHIEVEMENT_DEFS or module-level caches.
+// Returns a fresh sandbox with utils.js, achievements.js, charts.js, and
+// history.js loaded — enough for testing calculate1RM, isStagnant,
+// computeBestStreakFromDates, computeAchievements, getMonthBounds,
+// computePeriodStats, and computeReadiness. Fresh per call so tests don't
+// leak state into each other via ACHIEVEMENT_DEFS or module-level caches.
 function createTestContext() {
   const sandbox = createSandbox();
   loadFile(sandbox, 'js/utils.js');
   loadFile(sandbox, 'js/achievements.js');
   loadFile(sandbox, 'js/charts.js');
+  loadFile(sandbox, 'js/history.js');
   return sandbox;
 }
 

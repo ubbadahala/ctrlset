@@ -231,6 +231,81 @@ function setPRMuscle(muscle) {
 
 let activePRMuscle = 'All';
 
+// Rule-based readiness check — deliberately simple and explainable (each
+// flag has a plain-language reason shown to the user) rather than a
+// black-box numeric score. Combines the most recent recovery log (sleep,
+// soreness) with how many consecutive days you've trained without a break.
+function computeReadiness() {
+  const todayStr = getLocalDateString();
+  const reasons = [];
+  let flags = 0;    // significant concerns
+  let cautions = 0; // minor concerns
+
+  // 1. Most recent recovery log, only if logged today or yesterday —
+  // older data isn't a reliable signal for "how am I today".
+  const recentLogs = [...recoveryLogs].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const latestLog = recentLogs[0];
+  const daysSinceLog = latestLog ? Math.round((new Date(todayStr) - new Date(latestLog.date)) / 86400000) : null;
+  const hasRecentLog = !!latestLog && daysSinceLog !== null && daysSinceLog <= 1;
+
+  if (hasRecentLog) {
+    if (latestLog.sleep > 0) {
+      if (latestLog.sleep < 6) { flags++; reasons.push(`Only ${latestLog.sleep}h sleep logged`); }
+      else if (latestLog.sleep < 7) { cautions++; reasons.push(`${latestLog.sleep}h sleep — a bit short`); }
+    }
+    if (latestLog.soreness >= 7) { flags++; reasons.push(`High soreness logged (${latestLog.soreness}/10)`); }
+    else if (latestLog.soreness >= 5) { cautions++; reasons.push(`Moderate soreness logged (${latestLog.soreness}/10)`); }
+  }
+
+  // 2. Consecutive training days ending today or yesterday (a workout
+  // today doesn't exist yet when this runs on page load, so start from
+  // yesterday if today has no entry).
+  const workoutDates = new Set(workouts.map(w => w.date));
+  let consecutive = 0;
+  const cursor = new Date(todayStr + 'T00:00:00');
+  if (!workoutDates.has(getLocalDateString(cursor))) cursor.setDate(cursor.getDate() - 1);
+  while (workoutDates.has(getLocalDateString(cursor))) {
+    consecutive++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  if (consecutive >= 5) { flags++; reasons.push(`${consecutive} training days in a row without rest`); }
+  else if (consecutive >= 3) { cautions++; reasons.push(`${consecutive} training days in a row`); }
+
+  const hasSignal = hasRecentLog || consecutive > 0;
+  const score = flags * 2 + cautions;
+  const level = score >= 3 ? 'fatigued' : (score >= 1 ? 'moderate' : 'fresh');
+
+  return { level, reasons, hasSignal };
+}
+
+function renderReadinessCard() {
+  const card = document.getElementById('readinessCard');
+  const icon = document.getElementById('readinessIcon');
+  const label = document.getElementById('readinessLabel');
+  const reasonsEl = document.getElementById('readinessReasons');
+  if (!card) return;
+
+  const { level, reasons, hasSignal } = computeReadiness();
+
+  // Not enough data yet (brand-new user, or no recent recovery/training
+  // signal at all) — stay quiet rather than show a meaningless card.
+  if (!hasSignal) { card.style.display = 'none'; return; }
+
+  card.style.display = '';
+  card.classList.remove('readiness-fresh', 'readiness-moderate', 'readiness-fatigued');
+  card.classList.add(`readiness-${level}`);
+
+  const copy = {
+    fresh: { icon: '💪', text: 'Fresh — ready to train' },
+    moderate: { icon: '⚖️', text: 'Moderate — listen to your body' },
+    fatigued: { icon: '😴', text: 'Fatigued — consider a lighter session or rest' }
+  }[level];
+
+  icon.textContent = copy.icon;
+  label.textContent = copy.text;
+  reasonsEl.textContent = reasons.length ? reasons.join(' · ') : 'No concerns detected.';
+}
+
 function checkRecoveryReminder() {
   const banner = document.getElementById('recoveryReminderBanner');
   const textEl = document.getElementById('recoveryReminderText');

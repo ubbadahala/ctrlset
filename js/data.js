@@ -274,21 +274,47 @@ function renderSettingsExerciseList() {
   }
 
   list.innerHTML = exercisesDB.map((ex, index) => `
-    <div style="display:grid;grid-template-columns:1fr 130px 36px;gap:8px;align-items:center;padding:8px 6px;border-bottom:1px solid rgba(255,255,255,0.05);">
-      <input type="text" value="${ex.name}"
-        style="margin-bottom:0;font-size:0.9rem;padding:9px 12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;width:100%;"
+    <div class="settings-exercise-row">
+      <input type="text" value="${ex.name}" class="settings-exercise-name"
         onchange="renameExercise(${index}, this.value)"
         onfocus="this.style.borderColor='rgba(232,255,71,0.5)'"
         onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
-      <select style="margin-bottom:0;font-size:0.82rem;padding:9px 10px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:${ex.muscle?'var(--text)':'var(--muted)'};font-family:'DM Sans',sans-serif;outline:none;width:100%;"
+      <select class="settings-exercise-muscle" style="color:${ex.muscle?'var(--text)':'var(--muted)'};"
         onchange="setExerciseMuscle(${index}, this.value)"
         onfocus="this.style.borderColor='rgba(232,255,71,0.5)'"
         onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
         ${MUSCLE_OPTIONS.map(m => `<option value="${m}" ${ex.muscle === m ? 'selected' : ''}>${m || '— muscle —'}</option>`).join('')}
       </select>
-      <button class="btn-icon" style="width:36px;height:36px;font-size:0.9rem;" onclick="removeCustomExercise(${index})">✕</button>
+      <div class="settings-exercise-actions">
+        <button class="btn-icon" style="${ex.injuryNote ? 'background:rgba(255,107,53,0.15);border-color:rgba(255,107,53,0.4);' : ''}" onclick="setExerciseInjuryNote(${index})" title="${ex.injuryNote ? escapeHtml(ex.injuryNote) : 'Flag an injury concern'}">⚠️</button>
+        <button class="btn-icon" onclick="removeCustomExercise(${index})">✕</button>
+      </div>
     </div>
   `).join('');
+}
+
+let injuryNoteEditIndex = null;
+
+function setExerciseInjuryNote(index) {
+  injuryNoteEditIndex = index;
+  document.getElementById('injuryNoteInput').value = exercisesDB[index].injuryNote || '';
+  document.getElementById('injuryNoteOverlay').classList.add('active');
+}
+
+function dismissInjuryNoteModal() {
+  document.getElementById('injuryNoteOverlay').classList.remove('active');
+  injuryNoteEditIndex = null;
+}
+
+function saveInjuryNote() {
+  if (injuryNoteEditIndex === null) return;
+  const note = document.getElementById('injuryNoteInput').value.trim();
+  const wasSet = !!exercisesDB[injuryNoteEditIndex].injuryNote;
+  exercisesDB[injuryNoteEditIndex].injuryNote = note;
+  saveExercises();
+  dismissInjuryNoteModal();
+  if (note) toast('Injury flag saved ⚠️');
+  else if (wasSet) toast('Injury flag cleared');
 }
 
 async function addCustomExercise() {
@@ -308,7 +334,7 @@ async function addCustomExercise() {
 
     if (error) throw error;
 
-    exercisesDB.push({ id: data.id, name: data.name, muscle: data.muscle_group });
+    exercisesDB.push({ id: data.id, name: data.name, muscle: data.muscle_group, injuryNote: data.injury_note || '' });
     exercisesDB.sort((a, b) => a.name.localeCompare(b.name));
     
     renderExerciseDB();
@@ -335,13 +361,14 @@ async function saveExercises() {
       const toInsert = exercisesDB.map(ex => ({
         user_id: currentUser.id,
         name: ex.name,
-        muscle_group: ex.muscle || ''
+        muscle_group: ex.muscle || '',
+        injury_note: ex.injuryNote || null
       }));
       const { data, error } = await supabaseClient.from('exercises').insert(toInsert).select();
       if (error) throw error;
 
       // Re-attach fresh IDs so future renames/merges/deletes reference real rows
-      exercisesDB = data.map(ex => ({ id: ex.id, name: ex.name, muscle: ex.muscle_group }));
+      exercisesDB = data.map(ex => ({ id: ex.id, name: ex.name, muscle: ex.muscle_group, injuryNote: ex.injury_note || '' }));
       exercisesDB.sort((a, b) => a.name.localeCompare(b.name));
     }
 
@@ -670,6 +697,7 @@ async function saveRecovery() {
     toast('Recovery metrics saved! 🔋');
     if (navigator.vibrate) navigator.vibrate(100);
     checkRecoveryReminder();
+    renderReadinessCard();
   } catch (err) {
     console.error(err);
     toast('Error saving recovery log.');
