@@ -19,16 +19,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<!-- Vercel Web Analytics -->
-<script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
-<!-- Vercel Speed Insights -->
-<script>
-  window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
 <body>
 
@@ -383,6 +373,14 @@
 
   <div class="view" id="view-settings">
 
+    <div class="card glass-panel" style="border-color:rgba(232,255,71,0.2);">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>📖 Help & Tutorial</span>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text);opacity:0.8;margin-bottom:14px;">A quick walkthrough of every feature — logging, recovery, readiness, achievements, reminders, and more.</p>
+      <button class="btn btn-primary" style="width:100%;" onclick="openTutorial()">Open Tutorial</button>
+    </div>
+
     <div class="card glass-panel">
       <div class="card-title" style="color:var(--accent);">Account</div>
       
@@ -712,6 +710,105 @@
       <input type="range" id="editRSoreness" min="1" max="10" value="5" oninput="document.getElementById('editSorenessVal').innerText=this.value">
     </div>
     <button class="btn btn-primary" style="background:linear-gradient(135deg,var(--green),#2ecc71);color:#050505;font-weight:700;margin-top:4px;" onclick="saveEditedRecovery()">Save Changes</button>
+  </div>
+</div>
+
+<!-- ── TUTORIAL / HELP MODAL ── -->
+<div class="modal-overlay" id="tutorialModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📖 How CtrlSet Works</div>
+      <button class="modal-close" onclick="closeModal('tutorialModal')">✕</button>
+    </div>
+
+    <div id="tutorialAccordion">
+      <div class="tutorial-section">
+        <button class="tutorial-section-header" onclick="toggleTutorialSection(this)">
+          <span>🏋️ Logging a Workout</span><span class="tutorial-chevron">▾</span>
+        </button>
+        <div class="tutorial-section-body">
+          <p>Name your workout, add exercises, and log sets as you go. Exercise names are a searchable pick-list — type to filter your existing exercises, or add a new one in Settings first if it's not there yet.</p>
+          <p>Each set shows a live delta against your last session, so you know instantly if you're up, down, or matching. Tap <strong>🔁 Repeat Workout</strong> next to the name field to reload a past routine's exercises into a fresh draft — weights start blank so you enter today's numbers on purpose.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <button class="tutorial-section-header" onclick="toggleTutorialSection(this)">
+          <span>💤 Recovery & Rest Days</span><span class="tutorial-chevron">▾</span>
+        </button>
+        <div class="tutorial-section-body">
+          <p>Log sleep, protein, bodyweight, supplements, and soreness in the Daily Status card. On rest days, use <strong>Log Rest Day</strong> and pick Active Rest (cardio, walk, mobility) or Complete Rest — you can switch a rest day's type later without deleting it.</p>
+          <p>A banner will gently remind you on the Log page if you haven't logged recovery in a day or two.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <button class="tutorial-section-header" onclick="toggleTutorialSection(this)">
+          <span>💪 Daily Readiness</span><span class="tutorial-chevron">▾</span>
+        </button>
+        <div class="tutorial-section-body">
+          <p>The readiness card at the top of the Log page reads your most recent sleep/soreness log plus how many days in a row you've trained, and shows a simple Fresh / Moderate / Fatigued signal with plain-language reasons. It stays hidden until there's enough data to say anything useful.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <button class="tutorial-section-header" onclick="toggleTutorialSection(this)">
+          <span>⚠️ Injury Flags</span><span class="tutorial-chevron">▾</span>
+        </button>
+        <div class="tutorial-section-body">
+          <p>In Settings → Exercise Database, tap the ⚠️ button next to any exercise to leave yourself a note (e.g. "aggravates my shoulder"). You'll see that note as a gentle caution any time you log or edit that exercise afterward.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <button class="tutorial-section-header" onclick="toggleTutorialSection(this)">
+          <span>📜 History & Recap</span><span class="tutorial-chevron">▾</span>
+        </button>
+        <div class="tutorial-section-body">
+          <p>History splits into Workouts and Recovery tabs — filter by muscle group, date range, or search. Tap any workout to view, edit, delete (with a few seconds to Undo), or share it as an image.</p>
+          <p>Ending a session shows a recap with your session's exercises, volume, and any new PRs.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <button class="tutorial-section-header" onclick="toggleTutorialSection(this)">
+          <span>📊 Progress, Achievements & Plateau Watch</span><span class="tutorial-chevron">▾</span>
+        </button>
+        <div class="tutorial-section-body">
+          <p>The Progress tab has your training heatmap, personal records, muscle group distribution, strength trends, bodyweight trend, and a This-Month-vs-Last-Month comparison — with a one-tap <strong>📸 Share</strong> to export it as a poster.</p>
+          <p><strong>Achievements</strong> unlock automatically as you hit workout, streak, volume, and PR milestones. <strong>Plateau Watch</strong> flags any exercise stuck at the same weight for 3+ sessions with a suggested deload.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <button class="tutorial-section-header" onclick="toggleTutorialSection(this)">
+          <span>🔔 Reminders & Notifications</span><span class="tutorial-chevron">▾</span>
+        </button>
+        <div class="tutorial-section-body">
+          <p>In Settings → Workout Reminders, pick your usual training days and enable notifications — CtrlSet will nudge you if you haven't logged a workout yet on one of those days, even if the app is closed.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <button class="tutorial-section-header" onclick="toggleTutorialSection(this)">
+          <span>💾 Backup, Import/Export & Data</span><span class="tutorial-chevron">▾</span>
+        </button>
+        <div class="tutorial-section-body">
+          <p>Settings lets you export a full JSON backup (or a CSV for spreadsheets) and import a JSON backup back in. "Delete All Data" wipes everything from the cloud — use it carefully.</p>
+        </div>
+      </div>
+
+      <div class="tutorial-section">
+        <button class="tutorial-section-header" onclick="toggleTutorialSection(this)">
+          <span>📴 Installing as an App</span><span class="tutorial-chevron">▾</span>
+        </button>
+        <div class="tutorial-section-body">
+          <p>CtrlSet can be installed to your home screen like a native app (look for "Add to Home Screen" / the install icon in your browser), and the app shell will still load without a connection. On iOS this requires 16.4+ and installing via Share → Add to Home Screen first, for push notifications to work.</p>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="margin-top:16px;" onclick="closeModal('tutorialModal')">Got it</button>
   </div>
 </div>
 

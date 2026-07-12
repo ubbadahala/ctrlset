@@ -191,6 +191,29 @@ function closeModal(id) {
   }
 }
 
+function openTutorial() {
+  openModal('tutorialModal');
+  localStorage.setItem('ctrlset_tutorial_seen', '1');
+}
+
+function toggleTutorialSection(headerEl) {
+  const section = headerEl.closest('.tutorial-section');
+  if (!section) return;
+  const wasOpen = section.classList.contains('open');
+  // Only one section open at a time keeps the modal from growing too tall
+  section.parentElement.querySelectorAll('.tutorial-section.open').forEach(s => s.classList.remove('open'));
+  if (!wasOpen) section.classList.add('open');
+}
+
+// Auto-show the tutorial once for brand-new users (no workouts logged yet
+// and never dismissed it before), so first-time users get oriented without
+// having to go hunt for a help menu.
+function maybeShowTutorialForNewUser() {
+  if (localStorage.getItem('ctrlset_tutorial_seen')) return;
+  if (workouts.length > 0) return; // not a brand-new user, don't interrupt
+  setTimeout(() => openTutorial(), 600);
+}
+
 function openViewWorkout(id) {
   const w = workouts.find(x => x.id === id);
   if (!w) return;

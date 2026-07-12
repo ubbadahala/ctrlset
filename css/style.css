@@ -1232,6 +1232,55 @@ input, select, textarea {
     flex-shrink: 0;
   }
 
+  /* ── TUTORIAL / HELP ACCORDION ── */
+  .tutorial-section {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .tutorial-section-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 14px 16px;
+    cursor: pointer;
+    text-align: left;
+  }
+  .tutorial-chevron {
+    color: var(--muted);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+  .tutorial-section.open .tutorial-chevron { transform: rotate(180deg); color: var(--accent); }
+  .tutorial-section-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+    padding: 0 16px;
+  }
+  .tutorial-section.open .tutorial-section-body {
+    max-height: 400px;
+    padding: 0 16px 16px;
+  }
+  .tutorial-section-body p {
+    font-size: 0.82rem;
+    color: var(--text);
+    opacity: 0.85;
+    line-height: 1.6;
+    margin: 0 0 10px;
+  }
+  .tutorial-section-body p:last-child { margin-bottom: 0; }
+  .tutorial-section-body strong { color: var(--accent); }
+
   /* ── SETTINGS EXERCISE DATABASE ROW ── */
   .settings-exercise-row {
     display: grid;
@@ -1267,15 +1316,17 @@ input, select, textarea {
 
   @media (max-width: 600px) {
     .settings-exercise-row {
-      grid-template-columns: 1fr;
-      gap: 6px;
+      grid-template-columns: 1fr auto;
+      gap: 6px 8px;
       padding: 10px 6px;
     }
+    .settings-exercise-name {
+      grid-column: 1 / -1; /* name field gets its own full-width row */
+    }
     .settings-exercise-actions {
-      display: flex; /* stack select + buttons below the name on mobile instead of squeezing into one row */
+      display: flex; /* buttons sit inline next to the muscle select below */
       gap: 8px;
     }
-    .settings-exercise-muscle { flex: 1; }
   }
 
   /* ── DAILY READINESS CARD ── */

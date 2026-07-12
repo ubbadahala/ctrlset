@@ -2,6 +2,10 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Help & Tutorial
+
+* Added an in-app "📖 How CtrlSet Works" tutorial — an accordion modal covering every major feature area (logging, recovery & rest days, daily readiness, injury flags, history & recap, progress/achievements/plateau watch, reminders, backup, and PWA install). Reachable anytime from Settings, and shown automatically once for brand-new users (no workouts logged yet, never dismissed before) so first-time users get oriented without hunting for a help menu.
+
 ## Readiness & Safety
 
 * **Daily Readiness Score:** A card at the top of the Log page reads today's (or yesterday's) sleep and soreness logs plus how many consecutive days you've trained without a break, and shows a simple Fresh/Moderate/Fatigued signal with plain-language reasons — rule-based and explainable rather than a black-box score. Stays hidden until there's enough data to say anything meaningful.
