@@ -1232,6 +1232,55 @@ input, select, textarea {
     flex-shrink: 0;
   }
 
+  /* ── TUTORIAL / HELP ACCORDION ── */
+  .tutorial-section {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .tutorial-section-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 14px 16px;
+    cursor: pointer;
+    text-align: left;
+  }
+  .tutorial-chevron {
+    color: var(--muted);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+  .tutorial-section.open .tutorial-chevron { transform: rotate(180deg); color: var(--accent); }
+  .tutorial-section-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+    padding: 0 16px;
+  }
+  .tutorial-section.open .tutorial-section-body {
+    max-height: 400px;
+    padding: 0 16px 16px;
+  }
+  .tutorial-section-body p {
+    font-size: 0.82rem;
+    color: var(--text);
+    opacity: 0.85;
+    line-height: 1.6;
+    margin: 0 0 10px;
+  }
+  .tutorial-section-body p:last-child { margin-bottom: 0; }
+  .tutorial-section-body strong { color: var(--accent); }
+
   /* ── SETTINGS EXERCISE DATABASE ROW ── */
   .settings-exercise-row {
     display: grid;
@@ -1267,15 +1316,17 @@ input, select, textarea {
 
   @media (max-width: 600px) {
     .settings-exercise-row {
-      grid-template-columns: 1fr;
-      gap: 6px;
+      grid-template-columns: 1fr auto;
+      gap: 6px 8px;
       padding: 10px 6px;
     }
+    .settings-exercise-name {
+      grid-column: 1 / -1; /* name field gets its own full-width row */
+    }
     .settings-exercise-actions {
-      display: flex; /* stack select + buttons below the name on mobile instead of squeezing into one row */
+      display: flex; /* buttons sit inline next to the muscle select below */
       gap: 8px;
     }
-    .settings-exercise-muscle { flex: 1; }
   }
 
   /* ── DAILY READINESS CARD ── */
@@ -2666,4 +2717,330 @@ input, select, textarea {
   letter-spacing: 0.15em;            /* Spaced out for a modern tech feel */
   text-transform: uppercase;
   margin-top: -2px;                  /* Pulls it up tight against the bottom of CTRLSET */
+}
+/* ============================================================
+   WINDOWS XP "LUNA" THEME OVERRIDE
+   CSS-only re-skin. Layout/markup untouched — only colors,
+   borders, fonts, and surface treatments are changed below to
+   mimic the classic Windows XP (Luna Blue) desktop UI.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Trebuchet+MS&display=swap');
+
+:root {
+  --bg: #235fda;
+  --glass-bg: #ece9d8;
+  --glass-border: #0a246a;
+  --glass-shadow: 2px 2px 6px rgba(0,0,0,0.35);
+  --surface: #ece9d8;
+  --border: #919b9c;
+
+  --accent: #245edc;
+  --accent2: #ffb121;
+  --text: #000000;
+  --muted: #4c4c4c;
+  --red: #cc0000;
+  --green: #1f7a1f;
+
+  --xp-titlebar-start: #0a53c4;
+  --xp-titlebar-mid: #3789f2;
+  --xp-titlebar-end: #0a53c4;
+  --xp-face: #ece9d8;
+  --xp-face-light: #ffffff;
+  --xp-face-dark: #d4d0c8;
+  --xp-btn-start: #f5f4ea;
+  --xp-btn-end: #d9d6c3;
+  --xp-btn-hover-start: #fff2ce;
+  --xp-btn-hover-end: #ffdd7d;
+  --xp-blue-border: #0a246a;
+  --xp-green: #3d9a1f;
+}
+
+* { border-radius: 0 !important; }
+
+body {
+  font-family: 'Trebuchet MS', Tahoma, Arial, sans-serif !important;
+  background: linear-gradient(#5a86e0 0%, #a9c6f5 40%, #d8e8c2 60%, #6fa83d 100%) fixed !important;
+  color: #000 !important;
+}
+
+/* Remove the liquid-glass grid/orb overlay — not an XP thing */
+body::before { display: none !important; }
+
+::-webkit-scrollbar { width: 17px; height: 17px; }
+::-webkit-scrollbar-track { background: var(--xp-face); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--xp-btn-start), var(--xp-btn-end));
+  border: 1px solid var(--xp-blue-border);
+}
+::-webkit-scrollbar-button { background: var(--xp-btn-start); }
+
+.container {
+  background: var(--xp-face);
+  border: 2px solid var(--xp-blue-border);
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+  padding-top: 0 !important;
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+/* HEADER as an XP window title bar */
+header {
+  background: linear-gradient(180deg, var(--xp-titlebar-mid) 0%, var(--xp-titlebar-start) 8%, var(--xp-titlebar-start) 85%, #123f9e 100%) !important;
+  border-bottom: 2px solid var(--xp-blue-border) !important;
+  padding: 10px 14px !important;
+  margin-bottom: 0 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+.logo, .logo span {
+  color: #ffffff !important;
+  font-family: 'Trebuchet MS', Tahoma, sans-serif !important;
+  font-weight: bold !important;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.6) !important;
+  letter-spacing: 0.02em !important;
+  font-size: 1.6rem !important;
+}
+
+.header-tagline { color: #dbe8ff !important; }
+
+.date-display {
+  color: #ffffff !important;
+  font-family: Tahoma, Arial, sans-serif !important;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+}
+
+/* TABS styled like classic XP tab strip */
+.tabs {
+  background: var(--xp-face-dark) !important;
+  border: none;
+  border-bottom: 1px solid #919b9c;
+  padding: 6px 6px 0 6px !important;
+  gap: 2px !important;
+  margin-bottom: 20px !important;
+}
+
+.tab {
+  background: linear-gradient(var(--xp-btn-start), var(--xp-face-dark)) !important;
+  border: 1px solid #919b9c !important;
+  border-bottom: none !important;
+  color: #000 !important;
+  font-family: Tahoma, Arial, sans-serif !important;
+  text-transform: none !important;
+  font-size: 0.78rem !important;
+}
+
+.tab.active {
+  background: linear-gradient(var(--xp-btn-start), var(--xp-btn-end)) !important;
+  color: #000 !important;
+  box-shadow: none !important;
+  border-bottom: 1px solid var(--xp-btn-start) !important;
+  font-weight: bold !important;
+}
+
+.tab:hover:not(.active) { background: var(--xp-btn-hover-start) !important; }
+
+/* All glass panels/cards become classic beveled XP group boxes */
+.glass-panel, .card, .stat-card,
+.readiness-card, .weekly-target-wrap, .bw-chart-wrap,
+.rest-timer-widget, .achievements-grid, .exercise-table,
+.recap-inner, .share-card {
+  background: var(--xp-face) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #919b9c !important;
+  border-top-color: #fff !important;
+  border-left-color: #fff !important;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.25) !important;
+  color: #000 !important;
+}
+
+.card-title, .stat-label, .stat-value, .stat-sub,
+.readiness-label, .session-label {
+  color: #000 !important;
+  font-family: Tahoma, Arial, sans-serif !important;
+  text-shadow: none !important;
+}
+
+.stat-value, .readiness-icon { color: var(--xp-titlebar-start) !important; }
+
+/* BUTTONS: classic beveled XP push-buttons */
+.btn, .btn-ghost, .btn-danger, .btn-icon, .btn-confirm,
+.btn-add-exercise, .btn-share, .btn-timer, .timer-btn-adjust,
+.timer-btn-close, .chart-btn, .muscle-tab-btn, .confirm-btn,
+.btn-auth, .fab-end-session, .btn-start-session {
+  background: linear-gradient(var(--xp-btn-start), var(--xp-btn-end)) !important;
+  border: 1px solid #6b6b6b !important;
+  border-top-color: #fff !important;
+  border-left-color: #fff !important;
+  color: #000 !important;
+  font-family: Tahoma, Arial, sans-serif !important;
+  text-transform: none !important;
+  text-shadow: none !important;
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.15) !important;
+}
+
+.btn:hover, .btn-ghost:hover, .btn-icon:hover, .btn-confirm:hover,
+.btn-add-exercise:hover, .btn-share:hover, .btn-timer:hover,
+.chart-btn:hover:not(.active), .muscle-tab-btn:hover {
+  background: linear-gradient(var(--xp-btn-hover-start), var(--xp-btn-hover-end)) !important;
+  border-color: #cc8f00 !important;
+}
+
+.btn:active, .btn-primary:active {
+  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.4) !important;
+}
+
+.btn-primary {
+  background: linear-gradient(#7dc855, #3d8b1f) !important;
+  border: 1px solid var(--xp-green) !important;
+  color: #fff !important;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.4) !important;
+  font-family: Tahoma, Arial, sans-serif !important;
+  text-transform: none !important;
+}
+
+.btn-primary:hover { background: linear-gradient(#8fdb64, #4aa826) !important; }
+
+.chart-btn.active, .muscle-tab-btn.active {
+  background: linear-gradient(#8fc4f7, #3789f2) !important;
+  color: #fff !important;
+  border-color: var(--xp-blue-border) !important;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+.btn-danger, .confirm-btn-ok.danger {
+  background: linear-gradient(#ff9a9a, #d33) !important;
+  color: #fff !important;
+  border-color: #900 !important;
+}
+
+/* Inputs, selects, textareas: classic sunken XP field */
+input, select, textarea, .glass-input-group input {
+  background: #ffffff !important;
+  color: #000 !important;
+  border: 1px solid #7f9db9 !important;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.25) !important;
+  font-family: Tahoma, Arial, sans-serif !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #316ac5 !important;
+  box-shadow: 0 0 0 1px #316ac5 !important;
+}
+
+.glass-input-group label { color: #333 !important; }
+
+/* Toggle switches -> XP checkbox-ish green look */
+.slider-round {
+  background-color: #d4d0c8 !important;
+  border: 1px solid #7f7f7f !important;
+}
+.slider-round:before { background-color: #fff !important; border: 1px solid #7f7f7f; }
+input:checked + .slider-round { background-color: #cdeeb0 !important; border-color: var(--xp-green) !important; }
+input:checked + .slider-round:before { background-color: var(--xp-green) !important; }
+
+/* MODALS: classic XP dialog window chrome */
+.modal-overlay { background: rgba(0,0,0,0.5) !important; }
+
+.modal, .confirm-box {
+  background: var(--xp-face) !important;
+  border: 2px solid var(--xp-blue-border) !important;
+  box-shadow: 3px 3px 12px rgba(0,0,0,0.5) !important;
+}
+
+.modal-header {
+  background: linear-gradient(180deg, var(--xp-titlebar-mid) 0%, var(--xp-titlebar-start) 100%) !important;
+  border-bottom: none !important;
+  margin: -1px -1px 0 -1px;
+  padding: 8px 10px !important;
+}
+
+.modal-title, .confirm-title {
+  color: #fff !important;
+  font-family: Tahoma, Arial, sans-serif !important;
+  font-weight: bold !important;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.5) !important;
+}
+
+.modal-close {
+  background: linear-gradient(#f88, #c00) !important;
+  border: 1px solid #700 !important;
+  color: #fff !important;
+}
+.modal-close:hover { background: linear-gradient(#faa, #e00) !important; }
+
+.confirm-body { color: #000 !important; }
+.confirm-btn-cancel { background: linear-gradient(var(--xp-btn-start), var(--xp-btn-end)) !important; color: #000 !important; }
+.confirm-btn-ok { background: linear-gradient(#8fc4f7, #3789f2) !important; color: #fff !important; border-color: var(--xp-blue-border) !important; }
+
+/* Toast notifications as XP balloon tips
+   (the app renders .toast-pill inside #toastContainer at runtime —
+   the static .toast div in index.html is unused, but we cover it too) */
+.toast,
+.toast-pill {
+  background: #ffffe1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #000 !important;
+  border-radius: 4px !important;
+  color: #000 !important;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.4) !important;
+  font-family: Tahoma, Arial, sans-serif !important;
+  font-size: 0.82rem !important;
+  font-weight: normal !important;
+  letter-spacing: normal !important;
+  padding: 10px 16px !important;
+}
+
+/* Little balloon "tip" nub at the bottom, XP-tooltip style */
+.toast-pill::after {
+  content: '';
+  position: absolute;
+  left: 24px;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  background: #ffffe1;
+  border-right: 1px solid #000;
+  border-bottom: 1px solid #000;
+  transform: rotate(45deg);
+}
+.toast-pill { position: relative; }
+
+.toast-undo-btn {
+  background: linear-gradient(var(--xp-btn-start), var(--xp-btn-end)) !important;
+  border: 1px solid #6b6b6b !important;
+  border-top-color: #fff !important;
+  border-left-color: #fff !important;
+  border-radius: 3px !important;
+  color: #000 !important;
+  font-weight: normal !important;
+  letter-spacing: normal !important;
+}
+.toast-undo-btn:hover {
+  background: linear-gradient(var(--xp-btn-hover-start), var(--xp-btn-hover-end)) !important;
+}
+
+#toastContainer { z-index: 9999; }
+
+/* Day pills / muscle tabs look like small XP option buttons */
+.day-pill {
+  background: linear-gradient(var(--xp-btn-start), var(--xp-btn-end)) !important;
+  border: 1px solid #6b6b6b !important;
+  color: #000 !important;
+}
+.day-pill.active, .day-pill[aria-selected="true"] {
+  background: linear-gradient(#8fc4f7, #3789f2) !important;
+  color: #fff !important;
+}
+
+/* Skeleton loaders */
+.skeleton { background: linear-gradient(90deg, #e8e8e0 25%, #f5f5ee 50%, #e8e8e0 75%) !important; }
+
+/* Session bar / recovery banner as classic yellow XP info bar */
+.session-bar, .recovery-reminder-banner {
+  background: #ffffe1 !important;
+  border: 1px solid #d4c48a !important;
+  color: #000 !important;
 }
