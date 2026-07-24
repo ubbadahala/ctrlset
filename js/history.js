@@ -812,6 +812,40 @@ function closeRecapAndGoHistory() {
   switchTab('history', document.querySelector('.tab:nth-child(2)'));
 }
 
+// Saves/shares a generated poster canvas as an image. iOS Safari (including
+// homescreen-installed PWAs) does not reliably support the <a download>
+// trick — it either navigates to the data URI instead of downloading, or
+// does nothing visible at all in standalone mode. The Web Share API with a
+// File is the actual working approach there: it opens the native share
+// sheet, from which "Save Image" (or sharing directly to Messages/
+// Instagram/etc.) works correctly. Desktop browsers mostly don't support
+// sharing files, so they fall back to the original direct-download method.
+async function sharePosterImage(canvas, filename) {
+  try {
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+    if (!blob) throw new Error('Canvas produced an empty image');
+    const file = new File([blob], filename, { type: 'image/jpeg' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'CtrlSet' });
+      toast('Shared! 📸');
+      return;
+    }
+  } catch (err) {
+    // Tapping "Cancel" on the native share sheet rejects with an
+    // AbortError — that's a normal cancellation, not a failure.
+    if (err && err.name === 'AbortError') return;
+    console.error('Web Share failed, falling back to direct download:', err);
+  }
+
+  // Fallback for browsers without file-sharing support (mainly desktop).
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/jpeg', 0.95);
+  link.click();
+  toast('Poster saved! Ready for Instagram. 📸');
+}
+
 function shareProgress() {
   toast('Generating poster... ⏳');
 
@@ -889,12 +923,8 @@ function shareProgress() {
       scale: 2,
       logging: false,
       useCORS: true
-    }).then(canvas => {
-      const link = document.createElement('a');
-      link.download = `ctrlset-progress-${getLocalDateString()}.jpg`;
-      link.href = canvas.toDataURL('image/jpeg', 0.95);
-      link.click();
-      toast('Poster saved! Ready for Instagram. 📸');
+    }).then(async canvas => {
+      await sharePosterImage(canvas, `ctrlset-progress-${getLocalDateString()}.jpg`);
       node.innerHTML = '';
     }).catch(err => {
       console.error(err);
@@ -990,12 +1020,8 @@ function shareWorkout(id) {
       scale: 2,
       logging: false,
       useCORS: true
-    }).then(canvas => {
-      const link = document.createElement('a');
-      link.download = `ctrlset-${w.date.replace(/-/g, '')}.jpg`;
-      link.href = canvas.toDataURL('image/jpeg', 0.95);
-      link.click();
-      toast('Poster saved! Ready for Instagram. 📸');
+    }).then(async canvas => {
+      await sharePosterImage(canvas, `ctrlset-${w.date.replace(/-/g, '')}.jpg`);
       node.innerHTML = ''; // Clean up invisible DOM
     }).catch(err => {
       console.error(err);

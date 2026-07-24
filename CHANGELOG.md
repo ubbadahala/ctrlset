@@ -2,6 +2,11 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Critical Fixes: iOS Crash on Modal Open, Share/Save Image on Safari
+
+* **iOS crash when opening workout details (or any modal):** `.app-background-scaled` applied `filter: blur(4px) brightness(0.7)` to `#mainAppContent`, which wraps the entire app including all Progress page `<canvas>` charts. Combining `filter` with `transform` on a large container holding multiple canvases is a known iOS Safari/WebKit GPU-compositing crash trigger, especially under the tighter memory limits of a homescreen-installed PWA — manifesting as the app crashing and reloading repeatedly whenever a modal (like workout details) opened. Replaced the filter-based dim effect with a plain translucent overlay (`::after` + opacity), keeping the cheap `transform: scale()` "receding background" effect but removing the expensive/crash-prone filter entirely.
+* **"Save Image" not working on iPhone (Safari, including homescreen-installed PWA):** Both Share Workout and Share Progress used an `<a download>` trick to trigger a save, which iOS Safari does not reliably support — it either navigates to the raw image instead of downloading, or does nothing visible at all in standalone PWA mode. Added `sharePosterImage()`, which uses the Web Share API (`navigator.share()` with a `File`) when available — this opens the native share sheet on iOS/Android, from which "Save Image" actually works — falling back to the original direct-download approach on desktop browsers that don't support sharing files.
+
 ## Help & Tutorial
 
 * Added an in-app "📖 How CtrlSet Works" tutorial — an accordion modal covering every major feature area (logging, recovery & rest days, daily readiness, injury flags, history & recap, progress/achievements/plateau watch, reminders, backup, and PWA install). Reachable anytime from Settings, and shown automatically once for brand-new users (no workouts logged yet, never dismissed before) so first-time users get oriented without hunting for a help menu.

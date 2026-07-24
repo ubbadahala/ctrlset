@@ -2660,17 +2660,39 @@ input, select, textarea {
 
 /* Wrap your main app content (everything except modals/nav) in a div with id="mainAppContent" */
 #mainAppContent {
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin: center top;
+  position: relative;
 }
 
-/* We will apply this class via JS when a modal opens */
+/* A translucent overlay standing in for the old filter:brightness() dim —
+   see the comment on .app-background-scaled below for why. */
+#mainAppContent::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 5;
+  border-radius: inherit;
+}
+
+/* We will apply this class via JS when a modal opens.
+   Deliberately NOT using filter: blur()/brightness() here — combined with
+   transform on a large container that also holds several Chart.js
+   <canvas> elements (Progress page), this is a known iOS Safari/WebKit
+   GPU-compositing crash trigger (confirmed cause of "app crashes when
+   opening workout details" on iPhone/homescreen-PWA). transform: scale()
+   alone is cheap (GPU-composited, no repaint), so it stays; the dim
+   effect is now a plain overlay instead of a pixel filter. */
 .app-background-scaled {
   transform: scale(0.96) translateY(10px);
-  filter: blur(4px) brightness(0.7);
   border-radius: 20px; /* Gives it that floating screen look */
   overflow: hidden;
 }
+.app-background-scaled::after { opacity: 1; }
 
 /* Password Toggle Icon */
 .password-toggle-icon {
