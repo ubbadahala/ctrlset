@@ -1199,6 +1199,35 @@ input, select, textarea {
   .period-compare-delta.down { color: #ff6b6b; }
   .period-compare-delta.flat { color: var(--muted); }
 
+  /* ── HISTORY PAGINATION ── */
+  .history-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin: 20px;
+  }
+  .history-page-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .history-page-btn:hover:not(:disabled) { background: rgba(232, 255, 71, 0.1); border-color: rgba(232, 255, 71, 0.3); }
+  .history-page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .history-page-indicator {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
   /* ── PLATEAU WATCH CARD ── */
   .stagnation-item {
     display: flex;

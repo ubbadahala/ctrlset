@@ -1,6 +1,15 @@
+let historyCurrentPage = 1;
+let lastHistoryFilterSignature = null;
+const HISTORY_PAGE_SIZE = 7;
+
 function onHistoryDateRangeChange() {
   const val = document.getElementById('historyDateRange').value;
   document.getElementById('historyCustomDateRange').style.display = val === 'custom' ? 'flex' : 'none';
+  renderHistory();
+}
+
+function changeHistoryPage(delta) {
+  historyCurrentPage += delta;
   renderHistory();
 }
 
@@ -24,6 +33,16 @@ function renderHistory() {
     dateFrom = getLocalDateString(from);
   }
   const inDateRange = (dateStr) => (!dateFrom || dateStr >= dateFrom) && (!dateTo || dateStr <= dateTo);
+
+  // Reset to page 1 whenever the filter criteria actually change (search,
+  // muscle, sort, date range) — but NOT on every re-render, so paging
+  // controls and other actions (delete/undo, sync, etc.) don't bounce the
+  // user back to page 1 unnecessarily.
+  const filterSignature = JSON.stringify([q, muscleFilter, sortOrder, dateRangeVal, dateFrom, dateTo]);
+  if (filterSignature !== lastHistoryFilterSignature) {
+    historyCurrentPage = 1;
+    lastHistoryFilterSignature = filterSignature;
+  }
 
   // 1. Filter Workouts
   let filteredWorkouts = workouts.filter(w =>
@@ -73,8 +92,17 @@ function renderHistory() {
     return;
   }
 
+  // 3.5 Paginate — caps the number of simultaneously-rendered entries
+  // (each is a .glass-panel using backdrop-filter, which gets expensive
+  // and, at high counts on iOS Safari, can crash the tab if the full
+  // unfiltered history renders all at once).
+  const totalPages = Math.max(1, Math.ceil(combined.length / HISTORY_PAGE_SIZE));
+  if (historyCurrentPage > totalPages) historyCurrentPage = totalPages;
+  if (historyCurrentPage < 1) historyCurrentPage = 1;
+  const pageItems = combined.slice((historyCurrentPage - 1) * HISTORY_PAGE_SIZE, historyCurrentPage * HISTORY_PAGE_SIZE);
+
   // 4. Render HTML
-  list.innerHTML = combined.map(item => {
+  const itemsHtml = pageItems.map(item => {
     // ── RENDER REST DAY ──
     if (item.type === 'rest') {
       const isActive = item.restType === 'active';
@@ -118,8 +146,18 @@ function renderHistory() {
     </div>`;
   }).join('');
 
-  // Re-attach swipe-to-delete for the workouts
-  combined.forEach(item => {
+  const paginationHtml = totalPages > 1 ? `
+    <div class="history-pagination">
+      <button class="history-page-btn" onclick="changeHistoryPage(-1)" ${historyCurrentPage <= 1 ? 'disabled' : ''}>‹ Prev</button>
+      <span class="history-page-indicator">Page ${historyCurrentPage} of ${totalPages}</span>
+      <button class="history-page-btn" onclick="changeHistoryPage(1)" ${historyCurrentPage >= totalPages ? 'disabled' : ''}>Next ›</button>
+    </div>
+  ` : '';
+
+  list.innerHTML = itemsHtml + paginationHtml;
+
+  // Re-attach swipe-to-delete for the workouts currently on this page
+  pageItems.forEach(item => {
     if (item.type === 'workout') {
       const el = document.getElementById('we-' + item.data.id);
       if (el) attachSwipeDelete(el, item.data.id);
