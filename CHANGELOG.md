@@ -2,6 +2,10 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Follow-up: iOS Crash on Opening Workout Details from History
+
+* The previous crash fix (removing `filter: blur()` from `.app-background-scaled`) didn't fully resolve it — the crash was still reproducible specifically when opening workout details from History. Root cause: `.modal-overlay` used `backdrop-filter: blur(12px)`, sitting on top of a page that can have a long list of `.glass-panel` cards (every workout entry), each *already* using `backdrop-filter: blur(16px)` of its own. Stacking another backdrop-filter blur over a potentially long list of individually-blurred elements is a known severe iOS Safari/WebKit compositing crash pattern. Removed `.modal-overlay`'s backdrop-filter entirely, compensating with a darker solid background (`rgba(5,5,5,0.88)`) for similar visual separation without the blur computation.
+
 ## Critical Fixes: iOS Crash on Modal Open, Share/Save Image on Safari
 
 * **iOS crash when opening workout details (or any modal):** `.app-background-scaled` applied `filter: blur(4px) brightness(0.7)` to `#mainAppContent`, which wraps the entire app including all Progress page `<canvas>` charts. Combining `filter` with `transform` on a large container holding multiple canvases is a known iOS Safari/WebKit GPU-compositing crash trigger, especially under the tighter memory limits of a homescreen-installed PWA — manifesting as the app crashing and reloading repeatedly whenever a modal (like workout details) opened. Replaced the filter-based dim effect with a plain translucent overlay (`::after` + opacity), keeping the cheap `transform: scale()` "receding background" effect but removing the expensive/crash-prone filter entirely.

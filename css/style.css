@@ -2293,9 +2293,16 @@ input, select, textarea {
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(5,5,5,0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    /* No backdrop-filter here on purpose: this overlay sits on top of
+       pages that can have many .glass-panel elements underneath (each
+       already backdrop-filter: blur()'d, e.g. every workout card in a
+       long History list). Stacking another backdrop-filter blur over a
+       potentially long list of individually-blurred elements is a known
+       severe iOS Safari/WebKit compositing crash pattern — confirmed
+       cause of the app crashing specifically when opening workout
+       details from History. A darker solid background gives similar
+       visual separation without requiring that blur computation. */
+    background: rgba(5,5,5,0.88);
     z-index: 3000;
     display: flex;
     align-items: center;
