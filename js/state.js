@@ -152,6 +152,7 @@ async function syncDataFromSupabase() {
     checkWorkoutReminder();
     renderReadinessCard();
     renderProgress();
+    maybeShowTutorialForNewUser();
     renderHeatmap();
     renderRadarChart();
 

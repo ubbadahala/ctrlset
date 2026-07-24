@@ -1199,6 +1199,35 @@ input, select, textarea {
   .period-compare-delta.down { color: #ff6b6b; }
   .period-compare-delta.flat { color: var(--muted); }
 
+  /* ── HISTORY PAGINATION ── */
+  .history-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin: 20px;
+  }
+  .history-page-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .history-page-btn:hover:not(:disabled) { background: rgba(232, 255, 71, 0.1); border-color: rgba(232, 255, 71, 0.3); }
+  .history-page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .history-page-indicator {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
   /* ── PLATEAU WATCH CARD ── */
   .stagnation-item {
     display: flex;
@@ -2293,9 +2322,16 @@ input, select, textarea {
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(5,5,5,0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    /* No backdrop-filter here on purpose: this overlay sits on top of
+       pages that can have many .glass-panel elements underneath (each
+       already backdrop-filter: blur()'d, e.g. every workout card in a
+       long History list). Stacking another backdrop-filter blur over a
+       potentially long list of individually-blurred elements is a known
+       severe iOS Safari/WebKit compositing crash pattern — confirmed
+       cause of the app crashing specifically when opening workout
+       details from History. A darker solid background gives similar
+       visual separation without requiring that blur computation. */
+    background: rgba(5,5,5,0.88);
     z-index: 3000;
     display: flex;
     align-items: center;
@@ -2660,17 +2696,39 @@ input, select, textarea {
 
 /* Wrap your main app content (everything except modals/nav) in a div with id="mainAppContent" */
 #mainAppContent {
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin: center top;
+  position: relative;
 }
 
-/* We will apply this class via JS when a modal opens */
+/* A translucent overlay standing in for the old filter:brightness() dim —
+   see the comment on .app-background-scaled below for why. */
+#mainAppContent::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 5;
+  border-radius: inherit;
+}
+
+/* We will apply this class via JS when a modal opens.
+   Deliberately NOT using filter: blur()/brightness() here — combined with
+   transform on a large container that also holds several Chart.js
+   <canvas> elements (Progress page), this is a known iOS Safari/WebKit
+   GPU-compositing crash trigger (confirmed cause of "app crashes when
+   opening workout details" on iPhone/homescreen-PWA). transform: scale()
+   alone is cheap (GPU-composited, no repaint), so it stays; the dim
+   effect is now a plain overlay instead of a pixel filter. */
 .app-background-scaled {
   transform: scale(0.96) translateY(10px);
-  filter: blur(4px) brightness(0.7);
   border-radius: 20px; /* Gives it that floating screen look */
   overflow: hidden;
 }
+.app-background-scaled::after { opacity: 1; }
 
 /* Password Toggle Icon */
 .password-toggle-icon {

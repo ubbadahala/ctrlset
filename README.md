@@ -19,6 +19,7 @@ For the detailed, dated history of every update, see **[CHANGELOG.md](./CHANGELO
 * **Workout Reminders** — real push notifications (wakes a closed app/browser) on your usual training days if you haven't logged yet
 * **Installable PWA** — works offline for loading/browsing, installable to a home screen with quick-action shortcuts
 * **Cloud sync** — Supabase-backed auth, relational data model, and full JSON/CSV import-export
+* **In-app tutorial** — an accordion walkthrough of every feature, reachable from Settings and shown automatically once for new users
 
 ## 🛠️ Tech Stack
 

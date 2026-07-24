@@ -2,6 +2,26 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Root Cause Found: iOS Crash Was the History List Itself, Not the Modal
+
+* Confirmed (via testing with a filtered vs. unfiltered History list) that the crash wasn't actually about the modal at all — it was the number of simultaneously-rendered `backdrop-filter` elements. Every workout/rest entry in History uses `.glass-panel`, which applies `backdrop-filter: blur(16px)`; each one needs its own GPU compositing layer, and History had no pagination — a full, unfiltered history could render hundreds of these at once. That many simultaneous backdrop-filter layers is a confirmed iOS Safari/WebKit crash cause, independent of whatever triggers the interaction (opening a modal just happened to be the moment it tipped over).
+* **Fix: pagination.** History now renders a maximum of 7 entries at a time (workouts + rest days combined), with Prev/Next controls. This directly caps the number of simultaneous `.glass-panel` elements regardless of how much history exists, while keeping the existing visual style (backdrop-filter blur) intact rather than swapping it out. The page resets to 1 whenever search/muscle/sort/date-range filters actually change, but is preserved across other re-renders (delete/undo, sync, etc.).
+* Checked the rest of the app for the same unbounded-list pattern: the Personal Records grid also uses `.glass-panel` per card but is already capped at 10 entries, so it was never actually at risk. Recovery History rows don't use `.glass-panel` at all.
+* The two earlier fixes below (removing `filter: blur()` from the modal background-scale effect, and removing `backdrop-filter` from `.modal-overlay`) were valid fixes for real (if smaller) risks, but this pagination fix is what actually resolves the reported crash.
+
+## Follow-up: iOS Crash on Opening Workout Details from History
+
+* The previous crash fix (removing `filter: blur()` from `.app-background-scaled`) didn't fully resolve it — the crash was still reproducible specifically when opening workout details from History. Root cause: `.modal-overlay` used `backdrop-filter: blur(12px)`, sitting on top of a page that can have a long list of `.glass-panel` cards (every workout entry), each *already* using `backdrop-filter: blur(16px)` of its own. Stacking another backdrop-filter blur over a potentially long list of individually-blurred elements is a known severe iOS Safari/WebKit compositing crash pattern. Removed `.modal-overlay`'s backdrop-filter entirely, compensating with a darker solid background (`rgba(5,5,5,0.88)`) for similar visual separation without the blur computation.
+
+## Critical Fixes: iOS Crash on Modal Open, Share/Save Image on Safari
+
+* **iOS crash when opening workout details (or any modal):** `.app-background-scaled` applied `filter: blur(4px) brightness(0.7)` to `#mainAppContent`, which wraps the entire app including all Progress page `<canvas>` charts. Combining `filter` with `transform` on a large container holding multiple canvases is a known iOS Safari/WebKit GPU-compositing crash trigger, especially under the tighter memory limits of a homescreen-installed PWA — manifesting as the app crashing and reloading repeatedly whenever a modal (like workout details) opened. Replaced the filter-based dim effect with a plain translucent overlay (`::after` + opacity), keeping the cheap `transform: scale()` "receding background" effect but removing the expensive/crash-prone filter entirely.
+* **"Save Image" not working on iPhone (Safari, including homescreen-installed PWA):** Both Share Workout and Share Progress used an `<a download>` trick to trigger a save, which iOS Safari does not reliably support — it either navigates to the raw image instead of downloading, or does nothing visible at all in standalone PWA mode. Added `sharePosterImage()`, which uses the Web Share API (`navigator.share()` with a `File`) when available — this opens the native share sheet on iOS/Android, from which "Save Image" actually works — falling back to the original direct-download approach on desktop browsers that don't support sharing files.
+
+## Help & Tutorial
+
+* Added an in-app "📖 How CtrlSet Works" tutorial — an accordion modal covering every major feature area (logging, recovery & rest days, daily readiness, injury flags, history & recap, progress/achievements/plateau watch, reminders, backup, and PWA install). Reachable anytime from Settings, and shown automatically once for brand-new users (no workouts logged yet, never dismissed before) so first-time users get oriented without hunting for a help menu.
+
 ## Readiness & Safety
 
 * **Daily Readiness Score:** A card at the top of the Log page reads today's (or yesterday's) sleep and soreness logs plus how many consecutive days you've trained without a break, and shows a simple Fresh/Moderate/Fatigued signal with plain-language reasons — rule-based and explainable rather than a black-box score. Stays hidden until there's enough data to say anything meaningful.
