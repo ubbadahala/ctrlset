@@ -29,6 +29,7 @@ async function checkSession() {
     
     // 1. Hide the auth modal
     document.getElementById('authOverlay').classList.remove('active');
+    unlockBodyScroll();
     
     // 👉 2. BRING APP TO THE FRONT
     document.getElementById('mainAppContent')?.classList.remove('app-background-scaled');
@@ -37,6 +38,7 @@ async function checkSession() {
   } else {
     // 1. Show the auth modal
     document.getElementById('authOverlay').classList.add('active');
+    lockBodyScroll();
     
     // 👉 2. PUSH APP TO THE BACKGROUND
     document.getElementById('mainAppContent')?.classList.add('app-background-scaled');
@@ -66,6 +68,7 @@ async function handleLogin() {
     
     // 1. Hide the Auth Modal
     document.getElementById('authOverlay').classList.remove('active');
+    unlockBodyScroll();
     
     // 👉 2. BRING THE APP TO THE FRONT!
     document.getElementById('mainAppContent')?.classList.remove('app-background-scaled');
@@ -103,6 +106,7 @@ async function handleSignUp() {
       
       // Close the modal and bring the app out of the background
       document.getElementById('authOverlay').classList.remove('active');
+      unlockBodyScroll();
       document.getElementById('mainAppContent')?.classList.remove('app-background-scaled');
       
       await syncDataFromSupabase();
@@ -167,6 +171,7 @@ async function handleLogout() {
 
   // 7. Show the login modal and clear inputs
   document.getElementById('authOverlay').classList.add('active');
+  lockBodyScroll();
   document.getElementById('authPassword').value = '';
   document.getElementById('authEmail').value = '';
   

@@ -12,6 +12,7 @@ function startTimer(seconds) {
   widget.classList.remove('blinking');
   miniPill.style.display = 'none'; // Ensure mini pill is hidden when maximized
   miniPill.classList.remove('blinking');
+  lockBodyScroll();
   
   if (timerInterval) clearInterval(timerInterval);
   
@@ -43,18 +44,22 @@ function triggerSmartTimer(exerciseName, exerciseMuscle) {
 function minimizeTimer() {
   document.getElementById('restTimerWidget').classList.remove('active');
   document.getElementById('miniTimerPill').style.display = 'block';
+  unlockBodyScroll(); // Minimized to a small pill — no longer blocking the page
 }
 
 function maximizeTimer() {
   document.getElementById('miniTimerPill').style.display = 'none';
   document.getElementById('restTimerWidget').classList.add('active');
+  lockBodyScroll();
 }
 
 function stopTimer() {
   if (timerInterval) clearInterval(timerInterval);
+  const wasFullscreen = document.getElementById('restTimerWidget').classList.contains('active');
   document.getElementById('restTimerWidget').classList.remove('active', 'blinking');
   document.getElementById('miniTimerPill').style.display = 'none';
   document.getElementById('miniTimerPill').classList.remove('blinking');
+  if (wasFullscreen) unlockBodyScroll();
 }
 
 function adjustTimer(sec) {

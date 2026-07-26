@@ -2,6 +2,27 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Restored Blur on the Rest Timer Widget
+
+* Reverted `.rest-timer-widget` back to its original `backdrop-filter: blur(24px)`, unlike the other popup overlays. It only ever appears during an active workout session (Log page), never over a long History list of `.glass-panel` cards — which was the actual iOS crash trigger for the other overlays — so there's no real risk here, and the blur look is worth keeping for this one.
+
+## Background Scroll Lock When a Popup Is Open
+
+* The page behind any open popup (modals, confirm dialogs, recap, the rest timer, the auth gate) can no longer be scrolled while it's open.
+* Added `lockBodyScroll()`/`unlockBodyScroll()` (counter-based, so it stays correct even with rapid or nested open/close calls) to every overlay open/close pair in the app: `openModal`/`closeModal`, `showConfirm`/`dismissConfirm`, the rest-day-type/repeat-workout/injury-note modals, recap, the rest timer widget (including its minimize/maximize pill behavior — scroll unlocks while minimized to a pill, since that's no longer blocking), and all 5 scattered auth-overlay show/hide points in `auth.js`.
+* Uses `position: fixed` on `<body>` rather than just `overflow: hidden`, since the latter alone doesn't reliably stop scroll/touch-rubberbanding on iOS Safari. Scroll position is saved before locking and restored after unlocking so the page doesn't visually jump.
+* Fixed a related pre-existing bug while in there: the click-outside-to-dismiss handler for `.modal-overlay` manipulated the class directly instead of calling `closeModal()`, meaning it never removed the `.app-background-scaled` dimming effect — dismissing a modal by tapping outside it left the background permanently dimmed/scaled. Now routes through `closeModal()` properly.
+
+## Consistent No-Blur Backgrounds Across All Popup Overlays
+
+* Applied the same no-`backdrop-filter` solid-background approach (already used for `.modal-overlay`) to every other full-viewport popup overlay in the app, for both visual consistency and to close off remaining instances of the same iOS Safari crash risk:
+  - `.confirm-overlay` (confirm dialogs, rest-type/repeat-workout/injury-note modals)
+  - `.recap-overlay` (end-of-session recap), including its light-mode override
+  - The auth/login gate overlay — this one had an **inline** `backdrop-filter: blur(12px)` in `index.html` that bypassed the `.modal-overlay` class fix entirely
+  - `.rest-timer-widget` (full-page rest timer) — had the heaviest blur of all of them (24px)
+* All five now use the same solid `rgba(5,5,5,0.88)` background (or the light-mode equivalent) instead of blur.
+* Left smaller UI elements alone (buttons, toasts, dropdowns, skeleton loaders) — those aren't full-viewport popups and carry much less compositing cost; a much smaller-scoped change if wanted later.
+
 ## Root Cause Found: iOS Crash Was the History List Itself, Not the Modal
 
 * Confirmed (via testing with a filtered vs. unfiltered History list) that the crash wasn't actually about the modal at all — it was the number of simultaneously-rendered `backdrop-filter` elements. Every workout/rest entry in History uses `.glass-panel`, which applies `backdrop-filter: blur(16px)`; each one needs its own GPU compositing layer, and History had no pagination — a full, unfiltered history could render hundreds of these at once. That many simultaneous backdrop-filter layers is a confirmed iOS Safari/WebKit crash cause, independent of whatever triggers the interaction (opening a modal just happened to be the moment it tipped over).

@@ -639,10 +639,12 @@ function deleteWorkout(id) {
 
 function openRestDayModal() {
   document.getElementById('restTypeOverlay').classList.add('active');
+  lockBodyScroll();
 }
 
 function dismissRestTypeModal() {
   document.getElementById('restTypeOverlay').classList.remove('active');
+  unlockBodyScroll();
 }
 
 async function logRestDay(restType) {
@@ -839,10 +841,12 @@ function showRecap(workout, isVolumePR) {
   if (isVolumePR) toast('🔥 NEW ALL-TIME VOLUME PR!');
 
   document.getElementById('recapOverlay').classList.add('active');
+  lockBodyScroll();
 }
 
 function closeRecap() {
   document.getElementById('recapOverlay').classList.remove('active');
+  unlockBodyScroll();
 }
 
 function closeRecapAndGoHistory() {

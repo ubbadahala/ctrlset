@@ -456,10 +456,12 @@ function openRepeatWorkoutModal() {
   document.getElementById('repeatWorkoutPicker').innerHTML =
     names.map(n => `<option value="${n}">${n}</option>`).join('');
   document.getElementById('repeatWorkoutOverlay').classList.add('active');
+  lockBodyScroll();
 }
 
 function dismissRepeatWorkoutModal() {
   document.getElementById('repeatWorkoutOverlay').classList.remove('active');
+  unlockBodyScroll();
 }
 
 function loadRepeatWorkout() {

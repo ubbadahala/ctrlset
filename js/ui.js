@@ -1,6 +1,34 @@
 let _confirmCallback = null;
 let _cancelCallback = null;
 
+// ── BODY SCROLL LOCK ──
+// Counter-based so nested/rapid open-close doesn't unlock prematurely,
+// even though in practice this app always closes one overlay before
+// opening the next. Uses position:fixed rather than just overflow:hidden
+// since that's the reliable way to stop background scroll/touch
+// rubber-banding on iOS Safari specifically; scroll position is saved and
+// restored so the page doesn't visually jump on lock/unlock.
+let _scrollLockCount = 0;
+let _savedScrollY = 0;
+
+function lockBodyScroll() {
+  if (_scrollLockCount === 0) {
+    _savedScrollY = window.scrollY;
+    document.body.style.top = `-${_savedScrollY}px`;
+    document.body.classList.add('scroll-locked');
+  }
+  _scrollLockCount++;
+}
+
+function unlockBodyScroll() {
+  _scrollLockCount = Math.max(0, _scrollLockCount - 1);
+  if (_scrollLockCount === 0) {
+    document.body.classList.remove('scroll-locked');
+    document.body.style.top = '';
+    window.scrollTo(0, _savedScrollY);
+  }
+}
+
 // HELPER: Rolls numbers up smoothly
 function animateValue(elementId, endValue, duration = 800) {
   const obj = document.getElementById(elementId);
@@ -58,10 +86,12 @@ function showConfirm({ icon = '', title, body, confirmLabel = 'Confirm', danger 
   };
   
   document.getElementById('confirmOverlay').classList.add('active');
+  lockBodyScroll();
 }
 
 function dismissConfirm() {
   document.getElementById('confirmOverlay').classList.remove('active');
+  unlockBodyScroll();
   const cb = _cancelCallback;
   _confirmCallback = null;
   _cancelCallback = null;
@@ -172,6 +202,7 @@ let editExerciseCount = 0;
 function openModal(id) {
   // 1. Show the specific modal
   document.getElementById(id).classList.add('active');
+  lockBodyScroll();
   
   // 2. Shrink the main app background into the distance
   const mainApp = document.getElementById('mainAppContent');
@@ -183,6 +214,7 @@ function openModal(id) {
 function closeModal(id) {
   // 1. Hide the specific modal
   document.getElementById(id).classList.remove('active');
+  unlockBodyScroll();
   
   // 2. Bring the main app background back to the front
   const mainApp = document.getElementById('mainAppContent');
@@ -280,7 +312,7 @@ document.addEventListener('click', e => {
       return; 
     }
     
-    e.target.classList.remove('active');
+    closeModal(e.target.id);
   }
 });
 

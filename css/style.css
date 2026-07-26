@@ -49,6 +49,18 @@
     z-index: 1;
   }
 
+  /* Applied to <body> whenever any popup overlay is open. position:fixed
+     (rather than just overflow:hidden) is the reliable cross-browser way
+     to actually stop background scroll/touch-rubberbanding on iOS Safari;
+     top is set dynamically in JS to the negative scroll offset so the
+     page doesn't visually jump, then restored on unlock. */
+  body.scroll-locked {
+    position: fixed;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+  }
+
   /* GLASS UTILITY CLASS */
   .glass-panel {
     background: var(--glass-bg);
@@ -642,6 +654,10 @@ input, select, textarea {
   .rest-timer-widget {
     position: fixed;
     inset: 0;
+    /* Blur kept here deliberately, unlike the other popup overlays: this
+       widget only ever appears during an active workout session (Log
+       page), never over a long History list of .glass-panel cards, which
+       was the actual iOS crash trigger for the other overlays. */
     background: rgba(5, 5, 5, 0.6);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -1804,9 +1820,11 @@ input, select, textarea {
   .recap-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(5,5,5,0.92);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    /* No backdrop-filter, matching .modal-overlay — see that rule's
+       comment for why (nested backdrop-filter over potentially many
+       already-blurred .glass-panel elements is a confirmed iOS Safari
+       crash cause). */
+    background: rgba(5,5,5,0.88);
     z-index: 4000;
     display: flex;
     flex-direction: column;
@@ -2063,8 +2081,7 @@ input, select, textarea {
 
   /* 1. The main full-screen overlay background */
   body.light-mode .recap-overlay {
-    background: rgba(245, 245, 245, 0.85) !important; /* Brighten the dark backdrop */
-    backdrop-filter: blur(12px);
+    background: rgba(245, 245, 245, 0.92) !important; /* Brighten the dark backdrop */
   }
 
   /* 2. The dynamic stat boxes injected into #recapStats */
@@ -2250,9 +2267,9 @@ input, select, textarea {
   .confirm-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(5,5,5,0.75);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    /* No backdrop-filter, matching .modal-overlay — see that rule's
+       comment for why. */
+    background: rgba(5,5,5,0.88);
     z-index: 5000;
     display: flex;
     align-items: center;

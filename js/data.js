@@ -299,10 +299,12 @@ function setExerciseInjuryNote(index) {
   injuryNoteEditIndex = index;
   document.getElementById('injuryNoteInput').value = exercisesDB[index].injuryNote || '';
   document.getElementById('injuryNoteOverlay').classList.add('active');
+  lockBodyScroll();
 }
 
 function dismissInjuryNoteModal() {
   document.getElementById('injuryNoteOverlay').classList.remove('active');
+  unlockBodyScroll();
   injuryNoteEditIndex = null;
 }
 
