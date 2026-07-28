@@ -1820,11 +1820,13 @@ input, select, textarea {
   .recap-overlay {
     position: fixed;
     inset: 0;
-    /* No backdrop-filter, matching .modal-overlay — see that rule's
-       comment for why (nested backdrop-filter over potentially many
-       already-blurred .glass-panel elements is a confirmed iOS Safari
-       crash cause). */
-    background: rgba(5,5,5,0.88);
+    /* Blur kept here deliberately, unlike .modal-overlay/.confirm-overlay/
+       auth-overlay: this is a full-screen scrollable page takeover (hero,
+       stats, table), not a small centered popup box, so it doesn't carry
+       the same nested-backdrop-filter-over-a-long-list risk those do. */
+    background: rgba(5,5,5,0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     z-index: 4000;
     display: flex;
     flex-direction: column;
@@ -2081,7 +2083,8 @@ input, select, textarea {
 
   /* 1. The main full-screen overlay background */
   body.light-mode .recap-overlay {
-    background: rgba(245, 245, 245, 0.92) !important; /* Brighten the dark backdrop */
+    background: rgba(245, 245, 245, 0.85) !important; /* Brighten the dark backdrop */
+    backdrop-filter: blur(20px);
   }
 
   /* 2. The dynamic stat boxes injected into #recapStats */

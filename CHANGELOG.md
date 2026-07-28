@@ -2,6 +2,12 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Blur Rule: Full-Screen Takeovers Get Blur, Popup Modals Don't
+
+* Restored `backdrop-filter: blur(20px)` on `.recap-overlay` (+ light-mode override), following the same reasoning as the earlier rest-timer restoration: it's a full-screen scrollable page takeover (hero, stats, table), not a small centered popup box, so it doesn't carry the nested-backdrop-filter-over-a-long-list risk that caused the original History crash.
+* Established rule going forward: full-screen page takeovers (`.recap-overlay`, `.rest-timer-widget`) use blur; small centered popup boxes (`.modal-overlay`, `.confirm-overlay`, the auth overlay) stay solid-background-only.
+* Note: `.modal` (used by `viewWorkoutModal`, the overlay directly implicated in the original History crash) is actually similarly sized to `.recap-inner` (`max-width: 680px`) — but since it's the specific one confirmed to crash, it stays blur-free regardless of box size rather than reintroducing that risk.
+
 ## Restored Blur on the Rest Timer Widget
 
 * Reverted `.rest-timer-widget` back to its original `backdrop-filter: blur(24px)`, unlike the other popup overlays. It only ever appears during an active workout session (Log page), never over a long History list of `.glass-panel` cards — which was the actual iOS crash trigger for the other overlays — so there's no real risk here, and the blur look is worth keeping for this one.
