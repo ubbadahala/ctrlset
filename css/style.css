@@ -1461,7 +1461,6 @@ input, select, textarea {
 
   /* ── REST DAY HISTORY CARD ── */
   .rest-entry {
-    background: rgba(100, 180, 255, 1);
     border: 1px solid rgba(100, 180, 255, 0.15);
     border-left: 4px solid #64b4ff;
     border-radius: 10px;
