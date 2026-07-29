@@ -14,6 +14,7 @@
     --muted: #888;
     --red: #ff4444;
     --green: #44ff88;
+    --warning: #ffb347;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -279,6 +280,7 @@ input, select, textarea {
   ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.6; cursor: pointer; }
 
   select option { background: #111; color: #fff; }
+  body.light-mode select option { background: #fff; color: #171717; }
 
   textarea { resize: vertical; min-height: 80px; }
 
@@ -1272,7 +1274,7 @@ input, select, textarea {
     font-family: 'DM Mono', monospace;
     font-size: 0.78rem;
     font-weight: 700;
-    color: #ffb347;
+    color: var(--warning);
     white-space: nowrap;
     flex-shrink: 0;
   }
@@ -1411,7 +1413,7 @@ input, select, textarea {
     border-color: rgba(255, 179, 71, 0.3);
     background: rgba(255, 179, 71, 0.05);
   }
-  .readiness-card.readiness-moderate .readiness-label { color: #ffb347; }
+  .readiness-card.readiness-moderate .readiness-label { color: var(--warning); }
 
   .readiness-card.readiness-fatigued {
     border-color: rgba(255, 107, 53, 0.35);
@@ -1958,6 +1960,9 @@ input, select, textarea {
     --accent2: #e04f1a; /* Deeper orange */
     --text: #171717; /* Near black for ultimate readability */
     --muted: #6b7280; /* Clean medium gray */
+    --green: #1b8a4a; /* Deep readable green (was neon #44ff88 — failed contrast on light bg) */
+    --red: #d32f2f; /* Deep readable red (was neon #ff4444 — borderline contrast on light bg) */
+    --warning: #b8620a; /* Deep readable amber (was pastel #ffb347 — failed contrast on light bg) */
   }
 
   /* 1. Fix the Liquid Background Orbs & Grid */
@@ -2077,6 +2082,141 @@ input, select, textarea {
     background: rgba(0, 0, 0, 0.05) !important;
     color: var(--text) !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* ── LIGHT MODE: CONTRAST FIXES ──
+     Several elements use pastel red/orange/blue values tuned to pop
+     against the dark-mode background — on the light background those
+     same pastel shades read too faint (low luminance contrast against a
+     near-white page). Dark-mode values are left untouched; these only
+     apply in light mode. */
+
+  /* Danger/destructive actions (was pastel #ff7777/#ffaaaa) */
+  body.light-mode .btn-danger {
+    background: rgba(211, 47, 47, 0.08);
+    color: var(--red);
+    border-color: rgba(211, 47, 47, 0.25);
+  }
+  body.light-mode .delete-workout {
+    color: var(--red);
+    border-color: rgba(211, 47, 47, 0.3);
+  }
+  body.light-mode .fab-end-session {
+    background: rgba(211, 47, 47, 0.1);
+    color: var(--red);
+    border-color: rgba(211, 47, 47, 0.4);
+  }
+  body.light-mode .btn-start-session.running {
+    background: rgba(211, 47, 47, 0.08);
+    border-color: rgba(211, 47, 47, 0.35);
+    color: var(--red);
+  }
+  body.light-mode .confirm-btn-ok.danger {
+    background: rgba(211, 47, 47, 0.1);
+    color: var(--red);
+    border-color: rgba(211, 47, 47, 0.3);
+  }
+
+  /* Period comparison / readiness "negative" states (was pastel #ff6b6b/#ff6b35) */
+  body.light-mode .period-compare-delta.down,
+  body.light-mode .readiness-card.readiness-fatigued .readiness-label {
+    color: var(--red);
+  }
+
+  /* Rest day entries (was pastel #64b4ff / #ffa55a) */
+  body.light-mode .rest-entry-title {
+    color: #1a6fbf; /* Deep readable blue */
+  }
+  body.light-mode .rest-entry.active-rest .rest-entry-title {
+    color: var(--accent2);
+  }
+  body.light-mode .rest-entry.active-rest {
+    border-left-color: var(--accent2);
+  }
+
+  /* Exercise name validation warning (was pastel #ff6b6b/#ff9f9f) */
+  body.light-mode .name-wrapper input.input-invalid {
+    border-color: var(--red) !important;
+  }
+  body.light-mode .exercise-name-warning {
+    color: var(--red);
+  }
+  body.light-mode .exercise-name-warning a {
+    color: #a83232; /* Deep readable red link, still distinct from the base warning text */
+  }
+
+  /* Injury flag caution (was #ff6b35 matching dark-mode accent2 exactly) */
+  body.light-mode .exercise-injury-warning {
+    color: var(--accent2);
+    background: rgba(224, 79, 26, 0.08);
+    border-color: rgba(224, 79, 26, 0.25);
+  }
+
+  /* Header tagline (was hardcoded #888888 instead of the tuned --muted) */
+  body.light-mode .header-tagline {
+    color: var(--muted);
+  }
+
+  /* Settings exercise row fields (was hardcoded dark background rgba(0,0,0,0.3)
+     and a near-invisible faint-white border — these classes have higher
+     specificity than the global light-mode input/select rule above, so they
+     were shadowing that fix entirely). */
+  body.light-mode .settings-exercise-name,
+  body.light-mode .settings-exercise-muscle {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  /* Exercise search suggestions dropdown — was a hardcoded near-black
+     background with no override, meaning it rendered var(--text)'s
+     light-mode near-black text on a near-black background (invisible). */
+  body.light-mode .exercise-suggestions {
+    background: rgba(255, 255, 255, 0.98);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  body.light-mode .exercise-suggestion-item {
+    border-bottom-color: rgba(0, 0, 0, 0.06);
+  }
+  body.light-mode .exercise-suggestion-item:hover,
+  body.light-mode .exercise-suggestion-item:active {
+    background: rgba(158, 179, 0, 0.12);
+  }
+
+  /* "LOGS" peek popover (exercise history preview) — same invisible-text
+     pattern: var(--text) table cells on a hardcoded near-black background. */
+  body.light-mode .peek-popover {
+    background: rgba(255, 255, 255, 0.98);
+    border-color: rgba(158, 179, 0, 0.3);
+  }
+  body.light-mode .peek-popover td {
+    border-bottom-color: rgba(0, 0, 0, 0.06);
+  }
+
+  /* Toast notifications — same pattern, and one of the most frequently
+     seen elements in the app (every save/action shows one). */
+  body.light-mode .toast-pill {
+    background: rgba(255, 255, 255, 0.98);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  /* Mini rest-timer pill — its background is intentionally always dark
+     regardless of theme (a small persistent floating indicator), so its
+     text is forced to stay the bright dark-mode accent rather than
+     following var(--accent) into the darker light-mode tuning meant for
+     light backgrounds (which would be dark-on-dark here). */
+  body.light-mode .mini-timer-pill {
+    color: #e8ff47 !important;
+    border-color: #e8ff47 !important;
+  }
+
+  /* Login/signup screen — was hardcoded dark with no override at all.
+     Only reachable in light mode after logging out once light mode has
+     been enabled (the theme preference isn't known before first login),
+     but at that point var(--text)/var(--muted) in the welcome text would
+     render as near-invisible dark-on-dark. */
+  body.light-mode .auth-modal {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.1);
   }
 
   /* ── LIGHT MODE: SESSION RECAP OVERLAY ── */

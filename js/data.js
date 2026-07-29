@@ -278,11 +278,11 @@ function renderSettingsExerciseList() {
       <input type="text" value="${ex.name}" class="settings-exercise-name"
         onchange="renameExercise(${index}, this.value)"
         onfocus="this.style.borderColor='rgba(232,255,71,0.5)'"
-        onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
+        onblur="this.style.borderColor='var(--glass-border)'">
       <select class="settings-exercise-muscle" style="color:${ex.muscle?'var(--text)':'var(--muted)'};"
         onchange="setExerciseMuscle(${index}, this.value)"
         onfocus="this.style.borderColor='rgba(232,255,71,0.5)'"
-        onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
+        onblur="this.style.borderColor='var(--glass-border)'">
         ${MUSCLE_OPTIONS.map(m => `<option value="${m}" ${ex.muscle === m ? 'selected' : ''}>${m || '— muscle —'}</option>`).join('')}
       </select>
       <div class="settings-exercise-actions">

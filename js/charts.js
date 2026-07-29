@@ -1,10 +1,32 @@
 let chartRange = '4w';
 let activeChartMuscle = 'All';
 
+// Chart.js needs actual computed color strings at chart-creation time — it
+// doesn't react to CSS custom properties changing later, and Chart.defaults
+// gets shadowed by any color set explicitly in a chart's own options (which
+// every chart below does, for ticks/grid/tooltip). So each chart pulls its
+// colors from here instead of hardcoding dark-mode-only values, which
+// otherwise stay unreadable (e.g. neon yellow axis labels) in light mode.
+function chartThemeColors() {
+  const isLight = document.body.classList.contains('light-mode');
+  return {
+    tickColor: isLight ? '#57621f' : '#e8ff47',       // matches --accent's light/dark tuning
+    tickColorGreen: isLight ? '#1b8a4a' : '#44ff88',  // matches --green's light/dark tuning
+    axisLabelColor: isLight ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.4)',
+    gridColor: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
+    tooltipBg: isLight ? '#ffffff' : '#111',
+    tooltipBorder: isLight ? 'rgba(0,0,0,0.15)' : '#2a2a2a',
+    tooltipTitle: isLight ? '#171717' : '#e8ff47',
+    tooltipBody: isLight ? '#171717' : '#f0f0f0',
+    mutedColor: isLight ? '#6b7280' : '#888'
+  };
+}
+
 function renderChart() {
   const canvas = document.getElementById('volumeChart');
   const wrap = canvas?.closest('.chart-wrap');
   if (!canvas || !wrap) return;
+  const tc = chartThemeColors();
 
   const volumeChartSkeleton = document.getElementById('volumeChartSkeleton');
   const volumeChartContent = document.getElementById('volumeChartContent');
@@ -116,15 +138,15 @@ function renderChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#111', borderColor: '#2a2a2a', borderWidth: 1,
-          titleColor: '#e8ff47', bodyColor: '#f0f0f0',
+          backgroundColor: tc.tooltipBg, borderColor: tc.tooltipBorder, borderWidth: 1,
+          titleColor: tc.tooltipTitle, bodyColor: tc.tooltipBody,
           titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono' },
           callbacks: { label: ctx => `${ctx.dataset.label}: ${Math.round(ctx.raw || 0).toLocaleString()} kg` }
         }
       },
       scales: {
-        x: { stacked: true, grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { family: 'DM Mono', size: 9 } } },
-        y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#e8ff47', font: { family: 'DM Mono', size: 9 }, callback: v => v.toLocaleString() + ' kg' } }
+        x: { stacked: true, grid: { display: false }, ticks: { color: tc.axisLabelColor, font: { family: 'DM Mono', size: 9 } } },
+        y: { stacked: true, grid: { color: tc.gridColor }, ticks: { color: tc.tickColor, font: { family: 'DM Mono', size: 9 }, callback: v => v.toLocaleString() + ' kg' } }
       }
     }
   });
@@ -201,6 +223,7 @@ function renderBodyweightChart() {
   const canvas = document.getElementById('bwChart');
   const card = canvas?.closest('.card');
   if (!canvas) return;
+  const tc = chartThemeColors();
 
   const bwSkeleton = document.getElementById('bwSkeleton');
   const bwChartWrap = document.getElementById('bwChartWrap');
@@ -247,11 +270,11 @@ function renderBodyweightChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#111',
-          borderColor: '#2a2a2a',
+          backgroundColor: tc.tooltipBg,
+          borderColor: tc.tooltipBorder,
           borderWidth: 1,
-          titleColor: '#44ff88',
-          bodyColor: '#f0f0f0',
+          titleColor: tc.tickColorGreen,
+          bodyColor: tc.tooltipBody,
           titleFont: { family: 'DM Mono' },
           bodyFont: { family: 'DM Mono' },
           callbacks: { label: ctx => `${ctx.raw} kg` }
@@ -260,13 +283,13 @@ function renderBodyweightChart() {
       scales: {
         x: {
           grid: { display: false },
-          ticks: { color: 'rgba(255,255,255,0.4)', font: { family: 'DM Mono', size: 9 } }
+          ticks: { color: tc.axisLabelColor, font: { family: 'DM Mono', size: 9 } }
         },
         y: {
           min: minBW,
           max: maxBW,
-          grid: { color: 'rgba(255,255,255,0.05)' },
-          ticks: { color: '#44ff88', font: { family: 'DM Mono', size: 9 }, callback: v => v + ' kg' }
+          grid: { color: tc.gridColor },
+          ticks: { color: tc.tickColorGreen, font: { family: 'DM Mono', size: 9 }, callback: v => v + ' kg' }
         }
       }
     }
@@ -278,6 +301,7 @@ function renderStrengthChart() {
   const canvas = document.getElementById('strengthChart');
   const card = canvas?.closest('.card');
   if (!canvas || !picker) return;
+  const tc = chartThemeColors();
 
   const strengthSkeleton = document.getElementById('strengthSkeleton');
   const strengthContent = document.getElementById('strengthContent');
@@ -348,8 +372,8 @@ function renderStrengthChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#111', borderColor: '#2a2a2a', borderWidth: 1,
-          titleColor: '#e8ff47', bodyColor: '#f0f0f0',
+          backgroundColor: tc.tooltipBg, borderColor: tc.tooltipBorder, borderWidth: 1,
+          titleColor: tc.tickColor, bodyColor: tc.tooltipBody,
           titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono' },
           callbacks: {
             label: ctx => {
@@ -360,8 +384,8 @@ function renderStrengthChart() {
         }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { family: 'DM Mono', size: 9 } } },
-        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#e8ff47', font: { family: 'DM Mono', size: 9 }, callback: v => v + ' kg' } }
+        x: { grid: { display: false }, ticks: { color: tc.axisLabelColor, font: { family: 'DM Mono', size: 9 } } },
+        y: { grid: { color: tc.gridColor }, ticks: { color: tc.tickColor, font: { family: 'DM Mono', size: 9 }, callback: v => v + ' kg' } }
       }
     }
   });
@@ -380,6 +404,7 @@ function renderRadarChart() {
   const canvas = document.getElementById('muscleRadarChart');
   const card = canvas?.closest('.card');
   if (!canvas) return;
+  const tc = chartThemeColors();
 
   const radarSkeleton = document.getElementById('radarSkeleton');
   const radarContainer = document.getElementById('radarContainer');
@@ -423,17 +448,17 @@ function renderRadarChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#111', borderColor: '#2a2a2a', borderWidth: 1,
-          titleColor: '#e8ff47', bodyColor: '#f0f0f0',
+          backgroundColor: tc.tooltipBg, borderColor: tc.tooltipBorder, borderWidth: 1,
+          titleColor: tc.tickColor, bodyColor: tc.tooltipBody,
           titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono' },
           callbacks: { label: ctx => `${Math.round(ctx.raw).toLocaleString()} kg` }
         }
       },
       scales: {
         r: {
-          angleLines: { color: 'rgba(255,255,255,0.1)' },
-          grid: { color: 'rgba(255,255,255,0.1)' },
-          pointLabels: { color: '#888', font: { family: 'DM Mono' } },
+          angleLines: { color: tc.gridColor },
+          grid: { color: tc.gridColor },
+          pointLabels: { color: tc.mutedColor, font: { family: 'DM Mono' } },
           ticks: { display: false }
         }
       }

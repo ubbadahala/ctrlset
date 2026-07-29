@@ -2,6 +2,26 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Light Mode Contrast Audit
+
+A full pass across every element for light-mode visibility/contrast issues. Two recurring bug patterns accounted for most of it:
+
+**Pattern 1 — pastel/neon colors tuned only for the dark background.** Several elements used bright or pastel colors (bright green/red/orange/blue) designed to pop against the near-black dark-mode background; the same colors have poor contrast against the light-mode near-white background.
+* Introduced light-mode-safe `--green` (`#1b8a4a`), `--red` (`#d32f2f`), and a new `--warning` (`#b8620a`) variable, fixing every usage of those at once: live set deltas (`.delta-pos`/`.delta-neg` — shown on every set typed during logging), Plateau Watch suggestions, Daily Readiness labels, achievement/period-comparison trend colors, and more.
+* Added targeted light-mode overrides for the remaining one-off pastel colors that didn't map to those variables: destructive/danger buttons, the exercise-name validation warning, the injury-flag caution, rest-day entry titles, and the header tagline.
+* Fixed the same root cause in **Chart.js configurations**: every chart (Volume by Muscle Group, Bodyweight Trend, Strength Over Time, Muscle Group Distribution) hardcoded neon axis-label colors and near-invisible-on-white gridlines directly in its JS options, which silently overrides the app's existing `Chart.defaults` theme handling. Added a shared `chartThemeColors()` helper so every chart now picks correct tick/grid/tooltip colors based on the active theme.
+
+**Pattern 2 — a hardcoded dark background paired with a theme-variable text color.** Several floating/popover-style elements have their own always-rendered dark background, with text using `var(--text)`/`var(--accent)`/etc. — fine in dark mode (where those variables are already light-colored), but in light mode those variables switch to dark text, which then renders as dark-on-dark against the same never-changing dark background — i.e. **invisible**. Found and fixed in:
+* The exercise-name search/autocomplete dropdown (used constantly while logging)
+* The "LOGS" exercise-history peek popover
+* Toast notifications (shown on nearly every action in the app)
+* The login/signup screen itself (`.auth-modal`) — reachable in light mode after logging out with light mode previously enabled; the theme isn't known before first login, so this specific screen had never been exercised in light mode before
+* The mini rest-timer pill (forced to keep its bright accent color instead, since its background is intentionally always dark by design, unlike the others above)
+* The Settings exercise database row inputs (`.settings-exercise-name`/`.settings-exercise-muscle`), which had higher CSS specificity than — and were silently shadowing — the app's existing global light-mode input styling
+* A few scattered inline `rgba(255,255,255,0.05)` dividers/backgrounds (recovery history rows, PR muscle tags, nutrition stack indicators) that read as near-invisible hairlines on a light background — replaced with the existing, already-tuned `var(--glass-border)`
+
+No dark-mode values were changed — every fix here is additive (`body.light-mode` overrides or new light-mode-specific variable values), so dark mode's appearance is untouched.
+
 ## Blur Rule: Full-Screen Takeovers Get Blur, Popup Modals Don't
 
 * Restored `backdrop-filter: blur(20px)` on `.recap-overlay` (+ light-mode override), following the same reasoning as the earlier rest-timer restoration: it's a full-screen scrollable page takeover (hero, stats, table), not a small centered popup box, so it doesn't carry the nested-backdrop-filter-over-a-long-list risk that caused the original History crash.

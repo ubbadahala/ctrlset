@@ -189,7 +189,7 @@ function renderRecoveryHistory() {
   }
   if (card) card.style.display = '';
   list.innerHTML = sorted.map(r => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--glass-border);">
       <div>
         <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);margin-bottom:4px;">${formatDate(r.date)}</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;">
@@ -251,7 +251,7 @@ function renderPRs() {
     <div class="pr-card glass-panel">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
         <div class="pr-exercise">${pr.name}</div>
-        <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);background:rgba(255,255,255,0.05);padding:2px 7px;border-radius:10px;white-space:nowrap;">${pr.muscle}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);background:var(--glass-border);padding:2px 7px;border-radius:10px;white-space:nowrap;">${pr.muscle}</span>
       </div>
       <div class="pr-weight">${pr.weight} <span style="font-size:1rem;color:var(--text);opacity:0.5;">kg</span></div>
       <div class="pr-detail">${pr.sets}×${pr.reps} · ${formatDate(pr.date)}</div>
@@ -459,7 +459,7 @@ function renderNutritionInsights() {
         flex: 1; 
         height: 12px; 
         border-radius: 3px; 
-        background: ${active ? 'var(--green)' : 'rgba(255,255,255,0.05)'};
+        background: ${active ? 'var(--green)' : 'var(--glass-border)'};
         box-shadow: ${active ? '0 0 8px var(--green)' : 'none'};
         opacity: ${active ? '0.8' : '1'};
       " title="${date}"></div>

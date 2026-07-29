@@ -401,7 +401,7 @@ function predictLoadBlock(bid, lid) {
   if (stagnant) {
     suggestion = Math.floor((last.weight * 0.9) * 2) / 2;
     statusMsg = `⚠️ Stagnation detected. Deloading to ${suggestion}kg.`;
-    statusColor = '#ffb347';
+    statusColor = 'var(--warning)';
   } else if (last.reps >= 8) {
     const isLeg = last.muscle === 'Legs' ||
       ['legs','quads','glutes','hamstrings','squat','leg press','calf'].some(m => name.toLowerCase().includes(m));
