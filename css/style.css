@@ -5,7 +5,7 @@
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     /* Fallback surface/border used by workout entries */
-    --surface: rgba(20, 20, 20, 1);
+    --surface: rgba(20, 20, 20, 0.45);
     --border: rgba(255, 255, 255, 0.08);
 
     --accent: #e8ff47;
@@ -1114,6 +1114,41 @@ input, select, textarea {
     box-shadow: 0 0 10px rgba(255, 165, 90, 0.5); 
   }
 
+  /* ── PROGRESS PAGE HIERARCHY ── */
+  .progress-section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 28px 0 12px 4px;
+  }
+  .progress-section-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 28px 0 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .progress-section-toggle:hover { background: rgba(255, 255, 255, 0.06); }
+  body.light-mode .progress-section-toggle:hover { background: rgba(0, 0, 0, 0.04); }
+  .progress-section-chevron {
+    color: var(--muted);
+    transition: transform 0.2s ease;
+  }
+  .progress-section-chevron.open { transform: rotate(180deg); color: var(--accent); }
+  #detailedChartsSection > .card { margin-bottom: 24px; }
+
   /* ── ACHIEVEMENTS ── */
   .achievements-grid {
     display: grid;
@@ -1461,6 +1496,7 @@ input, select, textarea {
 
   /* ── REST DAY HISTORY CARD ── */
   .rest-entry {
+    background: rgba(100, 180, 255, 0.05);
     border: 1px solid rgba(100, 180, 255, 0.15);
     border-left: 4px solid #64b4ff;
     border-radius: 10px;
@@ -1951,7 +1987,7 @@ input, select, textarea {
     --glass-bg: rgba(255, 255, 255, 0.75); /* Crisp frosted white */
     --glass-border: rgba(0, 0, 0, 0.08); /* Subtle dark border */
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06); /* Airy, soft shadow */
-    --surface: rgba(255, 255, 255, 1);
+    --surface: rgba(255, 255, 255, 0.9);
     --border: rgba(0, 0, 0, 0.12);
 
     /* Darkened the neon colors so they are readable on white! */

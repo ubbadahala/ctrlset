@@ -2,6 +2,16 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Progress Page Visual Hierarchy
+
+Reorganized the Progress page from a flat stack of ~10 equal-weight cards into a clearer hierarchy:
+* **Hero** — Achievements stays at the top, unchanged.
+* **🔎 Insights** (new section label) — This Month vs Last Month and Plateau Watch, grouped together since both are "notice/act on this" cards rather than reference data. Plateau Watch moved up from below Personal Records to sit next to the other insight card.
+* **📋 Overview** (new section label) — Training Consistency (heatmap) and Personal Records, the two most frequently-glanced-at reference cards.
+* **📊 Detailed Charts** (new collapsible section, collapsed by default) — Nutritional Consistency, Muscle Group Distribution, Strength Over Time, Bodyweight Trend, and Volume by Muscle Group. Collapsing this also shortens the page for anyone who mainly cares about the top-tier cards; the choice is remembered in localStorage.
+* Chart.js instances get an explicit `.resize()` call when the section is expanded, as a safety net in case a chart rendered at 0×0 while its container was hidden (Chart.js's own responsive/ResizeObserver handling should already cover this, but it's a cheap defensive addition).
+* Minor cleanup: Plateau Watch's title color now uses the `var(--warning)` variable (from the light-mode contrast audit) instead of the hardcoded hex it still had.
+
 ## Light Mode Contrast Audit
 
 A full pass across every element for light-mode visibility/contrast issues. Two recurring bug patterns accounted for most of it:

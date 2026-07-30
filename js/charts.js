@@ -466,6 +466,40 @@ function renderRadarChart() {
   });
 }
 
+function toggleDetailedCharts() {
+  const section = document.getElementById('detailedChartsSection');
+  const chevron = document.getElementById('detailedChartsChevron');
+  if (!section || !chevron) return;
+
+  const willOpen = section.style.display === 'none';
+  section.style.display = willOpen ? '' : 'none';
+  chevron.classList.toggle('open', willOpen);
+  localStorage.setItem('ctrlset_detailed_charts_open', willOpen ? '1' : '0');
+
+  if (willOpen) {
+    // Chart.js is generally good about picking up the correct size once its
+    // canvas's parent goes from display:none to visible (responsive +
+    // ResizeObserver), but force a resize on each existing instance as a
+    // safety net in case any of them rendered at 0x0 while hidden.
+    chartInstance?.resize();
+    bwChartInstance?.resize();
+    strengthChartInstance?.resize();
+    radarInstance?.resize();
+  }
+}
+
+// Restores the user's last expand/collapse choice for Detailed Charts.
+// Collapsed by default for first-time users (keeps the Progress page
+// shorter, with hierarchy: hero -> insights -> overview -> detail).
+function initDetailedChartsState() {
+  const section = document.getElementById('detailedChartsSection');
+  const chevron = document.getElementById('detailedChartsChevron');
+  if (!section || !chevron) return;
+  const shouldBeOpen = localStorage.getItem('ctrlset_detailed_charts_open') === '1';
+  section.style.display = shouldBeOpen ? '' : 'none';
+  chevron.classList.toggle('open', shouldBeOpen);
+}
+
 function renderStagnationCard() {
   const listEl = document.getElementById('stagnationList');
   const skeleton = document.getElementById('stagnationSkeleton');

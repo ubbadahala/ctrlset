@@ -270,6 +270,8 @@
       <div class="achievements-grid" id="achievementsGrid" style="display:none;"></div>
     </div>
 
+    <div class="progress-section-label">🔎 Insights</div>
+
     <div class="card glass-panel" style="margin-bottom:24px;">
       <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
         <span>This Month vs Last Month</span>
@@ -279,7 +281,16 @@
       <div id="periodComparisonList" style="display:none;"></div>
     </div>
 
-    <div class="card glass-panel">
+    <div class="card glass-panel" style="margin-bottom:24px;border-color:rgba(255,179,71,0.2);">
+      <div class="card-title" style="color:var(--warning);">⚠️ Plateau Watch</div>
+      <div class="skeleton skeleton-card" id="stagnationSkeleton" style="height:70px;"></div>
+      <div id="stagnationEmpty" style="display:none;color:var(--muted);font-size:0.82rem;text-align:center;padding:12px 0;">No plateaus detected — keep it up 💪</div>
+      <div id="stagnationList"></div>
+    </div>
+
+    <div class="progress-section-label">📋 Overview</div>
+
+    <div class="card glass-panel" style="margin-bottom:24px;">
       <div class="card-title">Training Consistency</div>
       <p style="font-size: 0.7rem; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">Intensity based on total daily volume (Last 90 Days)</p>
 
@@ -294,16 +305,6 @@
       </div>
     </div>
 
-    <div class="card glass-panel">
-      <div class="card-title">Nutritional Consistency</div>
-      <div class="nutrition-stats-grid" id="nutritionStats">
-        </div>
-      
-      <label style="margin-top: 20px; font-size: 0.6rem;">Last 7 Days Supplement Consistency</label>
-      <div id="stackHeatmap" style="display: flex; gap: 6px; margin-top: 8px;">
-        </div>
-    </div>
-
     <div class="card glass-panel" style="margin-bottom:24px;">
       <div class="card-title">Personal Records</div>
       <div class="skeleton skeleton-chart" id="prSkeleton" style="height:160px;"></div>
@@ -313,61 +314,73 @@
       </div>
     </div>
 
-    <div class="card glass-panel" style="margin-bottom:24px;border-color:rgba(255,179,71,0.2);">
-      <div class="card-title" style="color:#ffb347;">⚠️ Plateau Watch</div>
-      <div class="skeleton skeleton-card" id="stagnationSkeleton" style="height:70px;"></div>
-      <div id="stagnationEmpty" style="display:none;color:var(--muted);font-size:0.82rem;text-align:center;padding:12px 0;">No plateaus detected — keep it up 💪</div>
-      <div id="stagnationList"></div>
-    </div>
+    <button class="progress-section-toggle" id="detailedChartsToggle" onclick="toggleDetailedCharts()">
+      <span>📊 Detailed Charts</span>
+      <span class="progress-section-chevron" id="detailedChartsChevron">▾</span>
+    </button>
 
-    <div class="card glass-panel">
-      <div class="card-title">Muscle Group Distribution</div>
-      <div class="skeleton skeleton-chart" id="radarSkeleton"></div>
-      <div class="radar-container" id="radarContainer" style="display:none;">
-        <canvas id="muscleRadarChart"></canvas>
+    <div id="detailedChartsSection" style="display:none;">
+
+      <div class="card glass-panel">
+        <div class="card-title">Nutritional Consistency</div>
+        <div class="nutrition-stats-grid" id="nutritionStats">
+          </div>
+        
+        <label style="margin-top: 20px; font-size: 0.6rem;">Last 7 Days Supplement Consistency</label>
+        <div id="stackHeatmap" style="display: flex; gap: 6px; margin-top: 8px;">
+          </div>
       </div>
-    </div>
 
-    <div class="card glass-panel chart-container-glass">
-      <div class="card-title">Strength Over Time</div>
-      <div class="skeleton skeleton-chart" id="strengthSkeleton"></div>
-      <div id="strengthContent" style="display:none;">
-        <div class="strength-exercise-picker">
-          <select id="strengthExercisePicker" onchange="renderStrengthChart()" style="margin-bottom:0;font-size:0.82rem;">
-            <option value="">Pick an exercise…</option>
-          </select>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="strengthChart" style="max-height:200px;"></canvas>
+      <div class="card glass-panel">
+        <div class="card-title">Muscle Group Distribution</div>
+        <div class="skeleton skeleton-chart" id="radarSkeleton"></div>
+        <div class="radar-container" id="radarContainer" style="display:none;">
+          <canvas id="muscleRadarChart"></canvas>
         </div>
       </div>
-    </div>
 
-    <div class="card glass-panel chart-container-glass">
-      <div class="card-title">Bodyweight Trend</div>
-      <div class="skeleton skeleton-chart" id="bwSkeleton" style="height:180px;"></div>
-      <div class="bw-chart-wrap glass-panel" id="bwChartWrap" style="padding:16px;display:none;">
-        <canvas id="bwChart" style="max-height:180px;"></canvas>
-      </div>
-    </div>
-
-    <div class="card glass-panel chart-container-glass">
-      <div class="card-title">Volume by Muscle Group</div>
-      <div class="skeleton skeleton-chart" id="volumeChartSkeleton"></div>
-      <div id="volumeChartContent" style="display:none;">
-        <div class="legend-overlay" id="chartLegend"></div>
-
-        <div class="chart-controls">
-          <button class="chart-btn active" onclick="setChartRange('4w', this)">4 Weeks</button>
-          <button class="chart-btn" onclick="setChartRange('3m', this)">3 Months</button>
-        </div>
-
-        <div class="chart-controls" id="chartMuscleFilter" style="margin-top:-8px;margin-bottom:16px;"></div>
-
-        <div class="chart-wrap">
-          <canvas id="volumeChart"></canvas>
+      <div class="card glass-panel chart-container-glass">
+        <div class="card-title">Strength Over Time</div>
+        <div class="skeleton skeleton-chart" id="strengthSkeleton"></div>
+        <div id="strengthContent" style="display:none;">
+          <div class="strength-exercise-picker">
+            <select id="strengthExercisePicker" onchange="renderStrengthChart()" style="margin-bottom:0;font-size:0.82rem;">
+              <option value="">Pick an exercise…</option>
+            </select>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="strengthChart" style="max-height:200px;"></canvas>
+          </div>
         </div>
       </div>
+
+      <div class="card glass-panel chart-container-glass">
+        <div class="card-title">Bodyweight Trend</div>
+        <div class="skeleton skeleton-chart" id="bwSkeleton" style="height:180px;"></div>
+        <div class="bw-chart-wrap glass-panel" id="bwChartWrap" style="padding:16px;display:none;">
+          <canvas id="bwChart" style="max-height:180px;"></canvas>
+        </div>
+      </div>
+
+      <div class="card glass-panel chart-container-glass">
+        <div class="card-title">Volume by Muscle Group</div>
+        <div class="skeleton skeleton-chart" id="volumeChartSkeleton"></div>
+        <div id="volumeChartContent" style="display:none;">
+          <div class="legend-overlay" id="chartLegend"></div>
+
+          <div class="chart-controls">
+            <button class="chart-btn active" onclick="setChartRange('4w', this)">4 Weeks</button>
+            <button class="chart-btn" onclick="setChartRange('3m', this)">3 Months</button>
+          </div>
+
+          <div class="chart-controls" id="chartMuscleFilter" style="margin-top:-8px;margin-bottom:16px;"></div>
+
+          <div class="chart-wrap">
+            <canvas id="volumeChart"></canvas>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
