@@ -2,6 +2,23 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Directional Tab Transitions + Sticky Session Timer
+
+* **Tab switching now slides directionally** instead of cutting instantly — moving to a tab further right (e.g. Log → Progress) slides content out to the left and the new tab in from the right, and vice versa for moving left, matching standard mobile tab-bar UX. Implemented as a sequential exit-then-enter (not a true overlapping crossfade) to avoid restructuring the layout into an absolute/grid overlap just for this — simpler, and lower-risk given this app's past sensitivity to GPU-heavy effects on iOS Safari. Total transition ~360ms (180ms out, 180ms in).
+* Fixed a timing regression this introduced: `goAddExerciseInSettings()` (jumps to Settings and focuses the new-exercise field when you tap "add it in Settings" from an unmatched exercise name) had a `setTimeout` tuned for the old instant tab switch; bumped to account for the new animated transition so it doesn't try to focus a field before the tab has actually finished sliding in.
+* **The session timer bar no longer disappears when you scroll** during an active workout — it's now `position: sticky` at the top of the Log page instead of scrolling away with the rest of the form. Given its own precedent (the floating "End Session" button was already `position: fixed`), this closes the gap where you could end a session from anywhere but couldn't see the clock from anywhere. Background made more opaque (no blur) so scrolled content underneath doesn't show through distractingly.
+
+## Settings Page Organization
+
+Grouped Settings' 8 previously-flat cards into labeled sections, reusing the same section-label pattern from the Progress page hierarchy work (generalized `.progress-section-label` into a shared `.section-label` class):
+* Help & Tutorial stays at the top, ungrouped (quick access, not a configuration item)
+* **👤 Account** — Account
+* **⚙️ Preferences** — Appearance, Weekly Volume Target, Workout Reminders
+* **🏋️ Exercises** — Exercise Database
+* **💾 Data** — Data & Backup (Danger Zone stays nested inside this card as before, already visually distinct via its red styling)
+
+No functional changes — this is purely reordering/labeling the existing cards.
+
 ## Progress Page Visual Hierarchy
 
 Reorganized the Progress page from a flat stack of ~10 equal-weight cards into a clearer hierarchy:

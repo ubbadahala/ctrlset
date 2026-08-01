@@ -137,13 +137,39 @@
   .tab:hover:not(.active) { color: var(--text); background: rgba(255, 255, 255, 0.05); }
 
   /* VIEWS */
-  .view { display: none; animation: fadeIn 0.4s ease; }
+  .view { display: none; }
   .view.active { display: block; }
   
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
   }
+
+  /* Directional tab-switch slide, driven by switchTab() in ui.js.
+     Sequential (exit fully, then enter) rather than a true overlapping
+     crossfade — avoids needing an absolute/grid overlap layout just for
+     this, and keeps things simple given this app's past sensitivity to
+     GPU-heavy effects on iOS Safari. */
+  @keyframes viewExitLeft {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(-24px); }
+  }
+  @keyframes viewExitRight {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(24px); }
+  }
+  @keyframes viewEnterFromRight {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes viewEnterFromLeft {
+    from { opacity: 0; transform: translateX(-24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .view.view-exit-left   { animation: viewExitLeft 0.18s ease forwards; }
+  .view.view-exit-right  { animation: viewExitRight 0.18s ease forwards; }
+  .view.view-enter-right { animation: viewEnterFromRight 0.18s ease forwards; }
+  .view.view-enter-left  { animation: viewEnterFromLeft 0.18s ease forwards; }
 
   /* STAT CARDS */
   .stats-row {
@@ -1115,7 +1141,7 @@ input, select, textarea {
   }
 
   /* ── PROGRESS PAGE HIERARCHY ── */
-  .progress-section-label {
+  .section-label {
     font-family: 'DM Mono', monospace;
     font-size: 0.7rem;
     font-weight: 700;
@@ -1810,7 +1836,24 @@ input, select, textarea {
     margin-bottom: 20px;
     gap: 16px;
   }
-  .session-bar.active { display: flex; }
+  .session-bar.active {
+    display: flex;
+    /* Stays visible while scrolling through a long exercise list during
+       an active session, instead of disappearing above the fold. Solid-ish
+       background (rather than the base's more translucent tint) so
+       content scrolling underneath doesn't show through distractingly —
+       deliberately no backdrop-filter here, consistent with keeping blur
+       off elements that sit above potentially many other cards. */
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    background: rgba(13, 13, 13, 0.96);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  }
+  body.light-mode .session-bar.active {
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
 
   .session-clock {
     font-family: 'Bebas Neue', sans-serif;

@@ -174,19 +174,53 @@ function toast(msg, icon = '') {
   }, 2800);
 }
 
+const TAB_ORDER = ['log', 'history', 'progress', 'settings'];
+let currentTab = 'log';
+let _tabTransitionTimeout = null;
+
 function switchTab(tab, btn) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  if (tab === currentTab) return;
+
+  const oldView = document.getElementById('view-' + currentTab);
+  const newView = document.getElementById('view-' + tab);
+  if (!oldView || !newView) return;
+
+  // Guard against a rapid second tap mid-transition: clear any pending
+  // step and force every view back to a clean (non-animating) state
+  // before starting a fresh transition.
+  clearTimeout(_tabTransitionTimeout);
+  document.querySelectorAll('.view').forEach(v => {
+    v.classList.remove('view-exit-left', 'view-exit-right', 'view-enter-left', 'view-enter-right');
+  });
+
+  const forward = TAB_ORDER.indexOf(tab) > TAB_ORDER.indexOf(currentTab);
+  const TRANSITION_MS = 180;
+
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('view-' + tab).classList.add('active');
   if (btn) btn.classList.add('active');
-  
-  if (tab === 'history') { renderHistory(); renderRecoveryHistory(); }
-  if (tab === 'progress') {
-    renderProgress();
-    renderNutritionInsights();
-    renderHeatmap();
-    renderRadarChart();
-  }
+
+  // Step 1: slide the outgoing view away in the direction of travel.
+  oldView.classList.add(forward ? 'view-exit-left' : 'view-exit-right');
+
+  _tabTransitionTimeout = setTimeout(() => {
+    oldView.classList.remove('active', 'view-exit-left', 'view-exit-right');
+
+    // Step 2: bring the incoming view in from the opposite side.
+    newView.classList.add('active', forward ? 'view-enter-right' : 'view-enter-left');
+    currentTab = tab;
+
+    if (tab === 'history') { renderHistory(); renderRecoveryHistory(); }
+    if (tab === 'progress') {
+      renderProgress();
+      renderNutritionInsights();
+      renderHeatmap();
+      renderRadarChart();
+    }
+
+    _tabTransitionTimeout = setTimeout(() => {
+      newView.classList.remove('view-enter-left', 'view-enter-right');
+    }, TRANSITION_MS);
+  }, TRANSITION_MS);
 }
 
 function switchHistorySubTab(subTab) {
