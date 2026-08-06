@@ -176,7 +176,7 @@ function toast(msg, icon = '') {
 
 const TAB_ORDER = ['log', 'history', 'progress', 'settings'];
 let currentTab = 'log';
-let _tabTransitionTimeout = null;
+let _tabTransitionTween = null;
 
 function switchTab(tab, btn) {
   if (tab === currentTab) return;
@@ -185,42 +185,69 @@ function switchTab(tab, btn) {
   const newView = document.getElementById('view-' + tab);
   if (!oldView || !newView) return;
 
-  // Guard against a rapid second tap mid-transition: clear any pending
-  // step and force every view back to a clean (non-animating) state
-  // before starting a fresh transition.
-  clearTimeout(_tabTransitionTimeout);
-  document.querySelectorAll('.view').forEach(v => {
-    v.classList.remove('view-exit-left', 'view-exit-right', 'view-enter-left', 'view-enter-right');
-  });
+  // Fall back to an instant switch if GSAP failed to load (e.g. CDN
+  // blocked/offline on first load before the service worker has cached
+  // it) rather than leaving the app stuck mid-transition.
+  if (typeof gsap === 'undefined') {
+    oldView.classList.remove('active');
+    newView.classList.add('active');
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    if (tab === 'history') { renderHistory(); renderRecoveryHistory(); }
+    if (tab === 'progress') { renderProgress(); renderNutritionInsights(); renderHeatmap(); renderRadarChart(); }
+    return;
+  }
+
+  // Guard against a rapid second tap mid-transition: kill any in-flight
+  // tween and snap every view back to a clean, non-animating state.
+  if (_tabTransitionTween) _tabTransitionTween.kill();
+  document.querySelectorAll('.view').forEach(v => gsap.set(v, { clearProps: 'transform,opacity' }));
 
   const forward = TAB_ORDER.indexOf(tab) > TAB_ORDER.indexOf(currentTab);
-  const TRANSITION_MS = 180;
+  const exitX = forward ? -24 : 24;
+  const enterFromX = forward ? 24 : -24;
+  const DURATION = 0.18;
 
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if (btn) btn.classList.add('active');
 
-  // Step 1: slide the outgoing view away in the direction of travel.
-  oldView.classList.add(forward ? 'view-exit-left' : 'view-exit-right');
-
-  _tabTransitionTimeout = setTimeout(() => {
-    oldView.classList.remove('active', 'view-exit-left', 'view-exit-right');
-
-    // Step 2: bring the incoming view in from the opposite side.
-    newView.classList.add('active', forward ? 'view-enter-right' : 'view-enter-left');
-    currentTab = tab;
-
-    if (tab === 'history') { renderHistory(); renderRecoveryHistory(); }
-    if (tab === 'progress') {
-      renderProgress();
-      renderNutritionInsights();
-      renderHeatmap();
-      renderRadarChart();
+  // GSAP animates by setting inline styles directly through its own
+  // rAF-driven ticker, rather than toggling CSS classes and hoping the
+  // display:none->block switch and the animation start land in the right
+  // order — which is exactly the WebKit quirk that made the old
+  // hand-rolled version unreliable on iOS Safari.
+  _tabTransitionTween = gsap.timeline({
+    onComplete: () => {
+      gsap.set(newView, { clearProps: 'transform,opacity' });
+      _tabTransitionTween = null;
     }
+  })
+    // Step 1: slide the outgoing view away in the direction of travel.
+    .to(oldView, { x: exitX, opacity: 0, duration: DURATION, ease: 'power1.in' })
+    // Step 2: swap which view is visible, run the page's own render calls,
+    // and set the incoming view's starting position — all synchronously,
+    // between the two tweens.
+    .call(() => {
+      oldView.classList.remove('active');
+      gsap.set(oldView, { clearProps: 'transform,opacity' });
 
-    _tabTransitionTimeout = setTimeout(() => {
-      newView.classList.remove('view-enter-left', 'view-enter-right');
-    }, TRANSITION_MS);
-  }, TRANSITION_MS);
+      newView.classList.add('active');
+      window.scrollTo(0, 0); // start the new tab at the top, not wherever the previous tab had scrolled to
+      currentTab = tab;
+
+      if (tab === 'history') { renderHistory(); renderRecoveryHistory(); }
+      if (tab === 'progress') {
+        renderProgress();
+        renderNutritionInsights();
+        renderHeatmap();
+        renderRadarChart();
+      }
+
+      gsap.set(newView, { x: enterFromX, opacity: 0 });
+    })
+    // Step 3: bring the incoming view in from the opposite side.
+    .to(newView, { x: 0, opacity: 1, duration: DURATION, ease: 'power1.out' });
 }
 
 function switchHistorySubTab(subTab) {

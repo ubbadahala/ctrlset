@@ -2,6 +2,42 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Fixed "Delete" Text Bleeding Through History Cards
+
+The swipe-to-delete red background (always structurally present behind each workout card, normally revealed only by sliding the card away) was becoming visible on regular cards without swiping. Root cause: `.glass-panel` is only ~45% opaque with a blur, and after the staggered entrance animation was added to `.workout-entry-wrap` (animating the wrap's own opacity), that combination created a compositing pass where the semi-transparent, blurred card let the red "Delete ✕" bleed through during the fade-in.
+
+* `css/style.css`: `.swipe-delete-bg` now starts at `opacity: 0` by default — genuinely hidden, not just relying on the card in front of it being opaque enough to mask it.
+* `js/history.js`: `attachSwipeDelete()` now explicitly sets the delete background's opacity to 1 only while actively swiping, and back to 0 on cancel/reset.
+* Also fixed a small inconsistency noticed while in there: the swipe-to-delete confirm dialog said "will be permanently removed" with no mention of undo, even though the delete it triggers does support undo — now matches the wording used elsewhere.
+
+## Rebuilt Tab Transitions on GSAP
+
+Replaced the hand-rolled CSS-keyframes + class-toggling + double-`requestAnimationFrame` transition with a GSAP timeline. The previous version's core fix (forcing a paint between the `display:none→block` switch and the animation start) worked around the underlying WebKit quirk; GSAP avoids it natively, since it animates by setting inline styles directly through its own `requestAnimationFrame`-driven ticker rather than relying on CSS `animation` timing — the same class of problem GSAP is specifically known for handling reliably on iOS Safari.
+
+* `index.html`/`sw.js`: added GSAP (cdnjs, same CDN pattern already used for Chart.js/html2canvas) as a new dependency, cached for offline use. Bumped the service worker cache version since the app shell file list changed.
+* `js/ui.js`: `switchTab()` now builds a `gsap.timeline()` — exit tween, a `.call()` step that swaps which view is active and runs the page's render calls, then an enter tween — instead of manually sequencing `setTimeout`s and CSS animation classes. Includes a plain-JS fallback (instant switch, no animation) if GSAP fails to load, e.g. first load with no connection before the service worker has cached it.
+* `css/style.css`: removed the now-unused `@keyframes viewExitLeft/Right/EnterFromLeft/Right` and `.view-exit-*`/`.view-enter-*` classes.
+* `js/workout.js`: tightened `goAddExerciseInSettings()`'s timeout to match GSAP's exact, guaranteed timeline duration (360ms) instead of the previous conservative buffer needed to cover rAF-delay uncertainty.
+
+## Fixed Tab Transitions Not Being Fluid on iOS
+
+Root cause: the entrance step switched a view from `display:none` to `display:block` and added its animation-triggering class in the same synchronous tick. iOS Safari specifically needs an actual paint to happen between those two things, or it just snaps straight to the animation's end state instead of playing it — a well-documented WebKit quirk, and the reason the slide felt fine conceptually but not fluid in practice on iOS.
+
+* `js/ui.js`: `switchTab()` now waits for a double `requestAnimationFrame` after setting `display:block`, guaranteeing a real frame has painted with the pre-animation styles before the entrance animation class gets added.
+* `css/style.css`: added `will-change: transform, opacity` to the transition classes, hinting the browser to promote them to their own compositor layer ahead of time rather than mid-animation (which reads as a stutter).
+* Also reset scroll position to the top when a new tab becomes active, so the incoming view doesn't appear mid-scroll from wherever the previous tab was left.
+* `js/workout.js`: bumped `goAddExerciseInSettings()`'s timeout (420ms → 480ms) to keep pace with the transition's now-slightly-longer total duration from the added rAF delay.
+
+## Staggered List-Item Entrance Animations
+
+Added a staggered fade-in to the two *bounded* lists in the app — deliberately scoped to only these two, given the app's confirmed history of iOS Safari struggling with many simultaneously-animated `.glass-panel` (backdrop-filter) elements at once:
+* **History list** — capped at 7 items per page, each fading in ~40ms after the previous.
+* **Achievement badges** — fixed at 15, each ~25ms after the previous.
+
+Both reuse the existing `fadeIn` keyframe (already used by `.rest-entry`) rather than introducing a new animation, with `animation-delay` set per item based on its index and `both` fill-mode so items don't flash visible before their delay elapses.
+
+**Caught and fixed a UX issue this introduced**: the History search box re-renders the list on every keystroke (`oninput`), which would have replayed the full stagger cascade on every character typed — felt glitchy rather than fluid. Added `debouncedRenderHistory()` (250ms) so the list only actually re-renders once typing pauses. Muscle/sort/date-range filters use `onchange` (fires once per selection, not per-keystroke) so they didn't need the same fix. Achievements aren't triggered by any rapid-fire input, so no debounce was needed there either.
+
 ## Directional Tab Transitions + Sticky Session Timer
 
 * **Tab switching now slides directionally** instead of cutting instantly — moving to a tab further right (e.g. Log → Progress) slides content out to the left and the new tab in from the right, and vice versa for moving left, matching standard mobile tab-bar UX. Implemented as a sequential exit-then-enter (not a true overlapping crossfade) to avoid restructuring the layout into an absolute/grid overlap just for this — simpler, and lower-risk given this app's past sensitivity to GPU-heavy effects on iOS Safari. Total transition ~360ms (180ms out, 180ms in).

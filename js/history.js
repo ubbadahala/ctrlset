@@ -13,6 +13,16 @@ function changeHistoryPage(delta) {
   renderHistory();
 }
 
+let _historySearchDebounce = null;
+function debouncedRenderHistory() {
+  // Search re-renders the full (now stagger-animated) list on every
+  // keystroke otherwise — debouncing means the list only actually
+  // re-renders (and re-animates) once typing pauses, rather than on
+  // every character.
+  clearTimeout(_historySearchDebounce);
+  _historySearchDebounce = setTimeout(renderHistory, 250);
+}
+
 function renderHistory() {
   const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
   const muscleFilter = document.getElementById('historyMuscleFilter')?.value || '';
@@ -102,12 +112,14 @@ function renderHistory() {
   const pageItems = combined.slice((historyCurrentPage - 1) * HISTORY_PAGE_SIZE, historyCurrentPage * HISTORY_PAGE_SIZE);
 
   // 4. Render HTML
-  const itemsHtml = pageItems.map(item => {
+  const itemsHtml = pageItems.map((item, idx) => {
+    const delay = `animation-delay:${idx * 40}ms;`;
+
     // ── RENDER REST DAY ──
     if (item.type === 'rest') {
       const isActive = item.restType === 'active';
       return `
-      <div class="rest-entry glass-panel${isActive ? ' active-rest' : ''}">
+      <div class="rest-entry glass-panel${isActive ? ' active-rest' : ''}" style="${delay}">
         <div class="rest-entry-title">${isActive ? '🏃 Active Rest' : '🛋️ Complete Rest'}</div>
         <div style="display:flex; align-items:center; gap:16px;">
           <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">${formatDate(item.date)}</span>
@@ -126,7 +138,7 @@ function renderHistory() {
       .map(m => `<span class="meta-pill">${m}</span>`).join('');
 
     return `
-    <div class="workout-entry-wrap">
+    <div class="workout-entry-wrap" style="${delay}">
       <div class="swipe-delete-bg">Delete ✕</div>
       <div class="workout-entry glass-panel" id="we-${w.id}" onclick="openViewWorkout('${w.id}')">
         <div class="workout-entry-header">
@@ -559,6 +571,7 @@ function peekHistory(id) {
 function attachSwipeDelete(el, workoutId) {
   let startX = 0, currentX = 0, isDragging = false;
   const THRESHOLD = 80;
+  const deleteBg = el.parentElement?.querySelector('.swipe-delete-bg');
 
   el.addEventListener('touchstart', e => {
     startX = e.touches[0].clientX;
@@ -568,7 +581,10 @@ function attachSwipeDelete(el, workoutId) {
   el.addEventListener('touchmove', e => {
     if (!isDragging) return;
     currentX = e.touches[0].clientX - startX;
-    if (currentX < 0) el.style.transform = `translateX(${Math.max(currentX, -120)}px)`;
+    if (currentX < 0) {
+      el.style.transform = `translateX(${Math.max(currentX, -120)}px)`;
+      if (deleteBg) deleteBg.style.opacity = '1';
+    }
   }, { passive: true });
 
   el.addEventListener('touchend', () => {
@@ -578,14 +594,18 @@ function attachSwipeDelete(el, workoutId) {
       showConfirm({
         icon: '🗑️',
         title: 'Delete Workout',
-        body: 'This workout will be permanently removed.',
+        body: 'This workout will be removed. You can undo for a few seconds after.',
         confirmLabel: 'Delete',
         danger: true,
         onConfirm: () => deleteWorkout(workoutId),
-        onCancel: () => { el.style.transform = ''; }
+        onCancel: () => {
+          el.style.transform = '';
+          if (deleteBg) deleteBg.style.opacity = '0';
+        }
       });
     } else {
       el.style.transform = '';
+      if (deleteBg) deleteBg.style.opacity = '0';
     }
     currentX = 0;
   });

@@ -287,16 +287,16 @@ function clearInjuryWarning(inputEl) {
 function goAddExerciseInSettings(name) {
   const settingsTabBtn = document.querySelector('.tab[onclick*="settings"]');
   switchTab('settings', settingsTabBtn);
-  // switchTab() now animates (~360ms: 180ms exit + 180ms enter) instead of
-  // switching instantly, so this needs to wait past that or the field
-  // won't be visible/focusable yet.
+  // switchTab() now animates via a GSAP timeline (2 x 0.18s = 360ms total)
+  // instead of switching instantly, so this needs to wait past that or
+  // the field won't be visible/focusable yet.
   setTimeout(() => {
     const input = document.getElementById('newExerciseInput');
     if (!input) return;
     input.value = name;
     input.scrollIntoView({ behavior: 'smooth', block: 'center' });
     input.focus();
-  }, 420);
+  }, 380);
 }
 
 function logSetLoad(bid, lid) {

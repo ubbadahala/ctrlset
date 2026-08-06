@@ -26,6 +26,7 @@ For the detailed, dated history of every update, see **[CHANGELOG.md](./CHANGELO
 * **Frontend:** Vanilla JavaScript (ES6+), HTML5, CSS3 (custom glassmorphism UI)
 * **Backend:** Supabase (PostgreSQL, GoTrue Auth, Edge Functions)
 * **Data Visualization:** Chart.js
+* **Animation:** GSAP (tab transitions)
 * **Export Generation:** html2canvas
 * **Offline Support:** Service Worker + Web App Manifest
 * **Push Notifications:** Web Push (VAPID) via a Supabase Edge Function

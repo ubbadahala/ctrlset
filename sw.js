@@ -4,7 +4,7 @@
 // requires being online. Draft autosave (localStorage) already works
 // offline on its own, independent of this file.
 
-const CACHE_VERSION = 'ctrlset-v2';
+const CACHE_VERSION = 'ctrlset-v3';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -26,6 +26,7 @@ const APP_SHELL = [
   '/appicon/icon-512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
 ];
 

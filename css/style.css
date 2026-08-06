@@ -145,31 +145,11 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Directional tab-switch slide, driven by switchTab() in ui.js.
-     Sequential (exit fully, then enter) rather than a true overlapping
-     crossfade — avoids needing an absolute/grid overlap layout just for
-     this, and keeps things simple given this app's past sensitivity to
-     GPU-heavy effects on iOS Safari. */
-  @keyframes viewExitLeft {
-    from { opacity: 1; transform: translateX(0); }
-    to   { opacity: 0; transform: translateX(-24px); }
-  }
-  @keyframes viewExitRight {
-    from { opacity: 1; transform: translateX(0); }
-    to   { opacity: 0; transform: translateX(24px); }
-  }
-  @keyframes viewEnterFromRight {
-    from { opacity: 0; transform: translateX(24px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
-  @keyframes viewEnterFromLeft {
-    from { opacity: 0; transform: translateX(-24px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
-  .view.view-exit-left   { animation: viewExitLeft 0.18s ease forwards; }
-  .view.view-exit-right  { animation: viewExitRight 0.18s ease forwards; }
-  .view.view-enter-right { animation: viewEnterFromRight 0.18s ease forwards; }
-  .view.view-enter-left  { animation: viewEnterFromLeft 0.18s ease forwards; }
+  /* Note: tab-switch transitions are handled by GSAP (see switchTab() in
+     ui.js) rather than CSS keyframes/classes — GSAP animates via direct
+     inline style manipulation through its own rAF ticker, which sidesteps
+     a WebKit quirk where toggling display:none->block and starting a CSS
+     animation in the same tick gets skipped/snapped on iOS Safari. */
 
   /* STAT CARDS */
   .stats-row {
@@ -1193,6 +1173,7 @@ input, select, textarea {
     border: 1px solid rgba(255, 255, 255, 0.06);
     cursor: default;
     transition: transform 0.15s, background 0.15s;
+    animation: fadeIn 0.3s ease both;
   }
   .achievement-badge.unlocked {
     background: rgba(232, 255, 71, 0.08);
@@ -1531,7 +1512,7 @@ input, select, textarea {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    animation: fadeIn 0.3s ease;
+    animation: fadeIn 0.3s ease both;
   }
   
   .rest-entry-title {
@@ -2418,6 +2399,7 @@ input, select, textarea {
     overflow: hidden;
     border-radius: 10px;
     margin-bottom: 12px;
+    animation: fadeIn 0.3s ease both;
   }
   .swipe-delete-bg {
     position: absolute;
@@ -2435,6 +2417,14 @@ input, select, textarea {
     border-left: 4px solid var(--accent2);
     border-radius: 10px;
     pointer-events: none;
+    /* Hidden by default (not just "covered") rather than relying purely
+       on .workout-entry's opaque background to mask it — a glass-panel
+       card is only ~45% opaque with a blur, and animating the wrap's
+       opacity (entrance stagger) creates a compositing pass where that
+       combination can let this bleed through visibly. Revealed via JS
+       (attachSwipeDelete) only during an actual swipe gesture. */
+    opacity: 0;
+    transition: opacity 0.15s ease;
   }
   .workout-entry {
     margin-bottom: 0;
