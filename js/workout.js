@@ -458,13 +458,16 @@ function openRepeatWorkoutModal() {
 
   document.getElementById('repeatWorkoutPicker').innerHTML =
     names.map(n => `<option value="${n}">${n}</option>`).join('');
-  document.getElementById('repeatWorkoutOverlay').classList.add('active');
+  const overlay = document.getElementById('repeatWorkoutOverlay');
+  overlay.classList.add('active');
   lockBodyScroll();
+  _gsapOpenOverlay(overlay);
 }
 
 function dismissRepeatWorkoutModal() {
-  document.getElementById('repeatWorkoutOverlay').classList.remove('active');
+  const overlay = document.getElementById('repeatWorkoutOverlay');
   unlockBodyScroll();
+  _gsapCloseOverlay(overlay, () => overlay.classList.remove('active'));
 }
 
 function loadRepeatWorkout() {

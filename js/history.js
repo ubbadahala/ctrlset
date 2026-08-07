@@ -662,13 +662,16 @@ function deleteWorkout(id) {
 }
 
 function openRestDayModal() {
-  document.getElementById('restTypeOverlay').classList.add('active');
+  const overlay = document.getElementById('restTypeOverlay');
+  overlay.classList.add('active');
   lockBodyScroll();
+  _gsapOpenOverlay(overlay);
 }
 
 function dismissRestTypeModal() {
-  document.getElementById('restTypeOverlay').classList.remove('active');
+  const overlay = document.getElementById('restTypeOverlay');
   unlockBodyScroll();
+  _gsapCloseOverlay(overlay, () => overlay.classList.remove('active'));
 }
 
 async function logRestDay(restType) {

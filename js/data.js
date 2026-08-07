@@ -298,13 +298,16 @@ let injuryNoteEditIndex = null;
 function setExerciseInjuryNote(index) {
   injuryNoteEditIndex = index;
   document.getElementById('injuryNoteInput').value = exercisesDB[index].injuryNote || '';
-  document.getElementById('injuryNoteOverlay').classList.add('active');
+  const overlay = document.getElementById('injuryNoteOverlay');
+  overlay.classList.add('active');
   lockBodyScroll();
+  _gsapOpenOverlay(overlay);
 }
 
 function dismissInjuryNoteModal() {
-  document.getElementById('injuryNoteOverlay').classList.remove('active');
+  const overlay = document.getElementById('injuryNoteOverlay');
   unlockBodyScroll();
+  _gsapCloseOverlay(overlay, () => overlay.classList.remove('active'));
   injuryNoteEditIndex = null;
 }
 

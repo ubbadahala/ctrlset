@@ -2,6 +2,20 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## Fixed Missing Animation on 4 Overlays (Not an iOS Bug — a Gap in the GSAP Rollout)
+
+The previous GSAP rollout removed the CSS `transition` that `.modal-overlay`/`.confirm-overlay` (shared classes) used to rely on, and added the GSAP replacement to the *generic* `openModal`/`closeModal` and `showConfirm`/`dismissConfirm` functions — but missed 4 other places that toggle an overlay sharing those same classes through their **own** dedicated open/close functions rather than the generic ones. Since the CSS transition was gone and GSAP was never wired into these specific functions, they animated with nothing at all — on any platform, not just iOS.
+
+Fixed:
+* `js/history.js`: `openRestDayModal()`/`dismissRestTypeModal()` (`#restTypeOverlay`)
+* `js/workout.js`: `openRepeatWorkoutModal()`/`dismissRepeatWorkoutModal()` (`#repeatWorkoutOverlay`)
+* `js/data.js`: `setExerciseInjuryNote()`/`dismissInjuryNoteModal()` (`#injuryNoteOverlay`)
+* `js/auth.js`: all 5 places that show/hide `#authOverlay` (the login/signup screen) — `checkSession()`'s both branches, login success, signup-with-immediate-session, and logout. This one's the most significant, since it's one of the first things a user interacts with.
+
+All four now call the same `_gsapOpenOverlay`/`_gsapCloseOverlay` helpers already used by the generic functions. Verified every overlay element in `index.html` sharing `.modal-overlay`/`.confirm-overlay` (9 total) is now accounted for and routes through one of these paths.
+
+Note: `#authOverlay`'s inner `.auth-modal` box has always used its own self-contained `@keyframes modalEnter` animation (not the CSS `transition` that was removed), so it's unaffected either way — the fix here only concerns the overlay background's fade.
+
 ## GSAP Applied Across the App's JS-Orchestrated Animations
 
 Extended GSAP (previously only used for tab transitions) to the rest of the app's JS-driven animation/transition points. Scoped to animations that are actually orchestrated by JS — pure CSS `:hover`/`:active` micro-states are correctly left as plain CSS (GSAP's own guidance too, and cheaper for the browser than routing simple state changes through JS).
