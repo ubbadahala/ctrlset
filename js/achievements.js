@@ -118,17 +118,23 @@ function renderAchievements() {
   const unlockedCount = achievements.filter(a => a.unlocked).length;
   if (countEl) countEl.textContent = `${unlockedCount}/${achievements.length}`;
 
-  grid.innerHTML = achievements.map((a, idx) => {
+  grid.innerHTML = achievements.map(a => {
     const progressLabel = a.unlocked
       ? formatDate(a.unlockedDate)
       : (a.type === 'volume' ? `${Math.round(a.current).toLocaleString()}/${a.target.toLocaleString()}kg` : `${a.current}/${a.target}`);
     return `
-      <div class="achievement-badge ${a.unlocked ? 'unlocked' : 'locked'}" title="${a.desc}" style="animation-delay:${idx * 25}ms;">
+      <div class="achievement-badge ${a.unlocked ? 'unlocked' : 'locked'}" title="${a.desc}">
         <div class="achievement-icon">${a.icon}</div>
         <div class="achievement-title">${a.title}</div>
         <div class="achievement-progress">${progressLabel}</div>
       </div>`;
   }).join('');
+
+  if (typeof gsap !== 'undefined') {
+    gsap.from(grid.querySelectorAll('.achievement-badge'), {
+      opacity: 0, y: 10, duration: 0.3, ease: 'power1.out', stagger: 0.025
+    });
+  }
 }
 
 // Called right after a new workout is saved. Diffs achievements computed

@@ -2,6 +2,23 @@
 
 All notable changes to CtrlSet are documented here, most recent first.
 
+## GSAP Applied Across the App's JS-Orchestrated Animations
+
+Extended GSAP (previously only used for tab transitions) to the rest of the app's JS-driven animation/transition points. Scoped to animations that are actually orchestrated by JS — pure CSS `:hover`/`:active` micro-states are correctly left as plain CSS (GSAP's own guidance too, and cheaper for the browser than routing simple state changes through JS).
+
+**Converted:**
+* `js/ui.js`: `animateValue()` (the number count-up used for stats like total volume/streak) — replaced the hand-rolled `requestAnimationFrame` loop and manual `easeOutQuart` math with a GSAP tween.
+* `js/achievements.js`, `js/history.js`: the staggered entrance for Achievement badges and History cards now uses GSAP's native `stagger` option instead of computing `animation-delay` per item index in the template string — same visual effect, more idiomatic.
+* `js/charts.js`: `toggleDetailedCharts()` — this previously had **no animation at all** (instant show/hide); now fades/rises in via GSAP. Deliberately not animating `height` here, even though that's the more typical accordion approach — this section holds 4 Chart.js canvases, and `height` is a layout-triggering property that would force a reflow of that whole subtree every frame. Opacity/transform is compositor-only and cheap, consistent with this app's iOS performance history.
+* `js/ui.js`: toast notifications (`toast()`/`toastWithUndo()`) now share a `_animateToastIn`/`_dismissToast` helper pair, replacing the previous CSS-animation + `animationend`-listener approach.
+* `js/ui.js`: `openModal`/`closeModal` and `showConfirm`/`dismissConfirm` (covering workout view/edit, recovery edit, tutorial, and every confirm-style dialog including rest-type/repeat-workout/injury-note) now share `_gsapOpenOverlay`/`_gsapCloseOverlay` helpers instead of CSS `transition` on class toggle.
+* Removed the now-redundant CSS (`transition`/`animation` properties, unused keyframes) everywhere GSAP took over.
+
+**Deliberately left as CSS**, with reasoning:
+* **Confetti** (`triggerConfetti()`) — creates ~50 simultaneously-animating particles; CSS keyframe animations run on the compositor thread independent of JS, which is cheaper than 50 individual GSAP tweens for something this disposable/fire-and-forget.
+* **Button/input hover, active, and focus states** — simple, declarative, state-driven; converting these to GSAP would be against GSAP's own best-practice guidance and adds JS overhead for no benefit.
+* **Recap page entrance** (`.recap-inner`'s `slideIn`) and **rest timer widget** (start/minimize/maximize/stop) — both already animate via mechanisms that don't have the `display:none`-timing bug the tab transitions had (recap's content is freshly inserted HTML each render; the rest timer widget uses opacity/pointer-events toggling, never `display:none`), so converting them wouldn't fix anything, just add risk for no functional gain. Can revisit if wanted purely for stylistic consistency.
+
 ## Fixed "Delete" Text Bleeding Through History Cards
 
 The swipe-to-delete red background (always structurally present behind each workout card, normally revealed only by sliding the card away) was becoming visible on regular cards without swiping. Root cause: `.glass-panel` is only ~45% opaque with a blur, and after the staggered entrance animation was added to `.workout-entry-wrap` (animating the wrap's own opacity), that combination created a compositing pass where the semi-transparent, blurred card let the red "Delete ✕" bleed through during the fade-in.

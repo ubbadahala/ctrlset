@@ -29,35 +29,57 @@ function unlockBodyScroll() {
   }
 }
 
+// Shared entrance/exit for .modal-overlay and .confirm-overlay (and their
+// inner .modal/.confirm-box content boxes). These previously animated via
+// CSS transition on class toggle — not buggy on iOS the way the tab-view
+// animations were (these elements never use display:none, so there's no
+// display-switch timing issue), but consolidated here for consistency and
+// because it removes needing near-identical transition CSS on 4 different
+// selectors.
+function _gsapOpenOverlay(overlay) {
+  if (typeof gsap === 'undefined') return;
+  const inner = overlay.querySelector('.modal, .confirm-box');
+  gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: 'power1.out' });
+  if (inner) gsap.fromTo(inner, { y: 12, scale: 0.96 }, { y: 0, scale: 1, duration: 0.3, ease: 'power2.out' });
+}
+
+function _gsapCloseOverlay(overlay, onComplete) {
+  if (typeof gsap === 'undefined') { if (onComplete) onComplete(); return; }
+  gsap.to(overlay, {
+    opacity: 0, duration: 0.2, ease: 'power1.in',
+    onComplete: () => {
+      gsap.set(overlay, { clearProps: 'opacity' });
+      const inner = overlay.querySelector('.modal, .confirm-box');
+      if (inner) gsap.set(inner, { clearProps: 'transform' });
+      if (onComplete) onComplete();
+    }
+  });
+}
+
 // HELPER: Rolls numbers up smoothly
 function animateValue(elementId, endValue, duration = 800) {
   const obj = document.getElementById(elementId);
   if (!obj) return;
-  
+
   // Strip out commas if there are any to get the current integer
   const currentText = obj.innerText.replace(/,/g, '');
   const startValue = parseInt(currentText) || 0;
-  
+
   if (startValue === endValue) return; // Don't animate if nothing changed
 
-  let startTimestamp = null;
-  const step = (timestamp) => {
-    if (!startTimestamp) startTimestamp = timestamp;
-    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-    
-    // Calculate the ease-out curve so it slows down elegantly at the end
-    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-    const currentNum = Math.floor(easeOutQuart * (endValue - startValue) + startValue);
-    
-    obj.innerHTML = currentNum.toLocaleString();
-    
-    if (progress < 1) {
-      window.requestAnimationFrame(step);
-    } else {
-      obj.innerHTML = endValue.toLocaleString(); // Ensure it ends perfectly on the exact number
-    }
-  };
-  window.requestAnimationFrame(step);
+  if (typeof gsap === 'undefined') {
+    obj.innerHTML = endValue.toLocaleString();
+    return;
+  }
+
+  const counter = { value: startValue };
+  gsap.to(counter, {
+    value: endValue,
+    duration: duration / 1000, // GSAP durations are in seconds; this function's callers pass ms
+    ease: 'power4.out', // similar snap-then-settle feel to the previous manual easeOutQuart
+    onUpdate: () => { obj.innerHTML = Math.floor(counter.value).toLocaleString(); },
+    onComplete: () => { obj.innerHTML = endValue.toLocaleString(); } // exact final number, no rounding drift
+  });
 }
 
 function showConfirm({ icon = '', title, body, confirmLabel = 'Confirm', danger = false, onConfirm, onCancel = null }) {
@@ -87,11 +109,13 @@ function showConfirm({ icon = '', title, body, confirmLabel = 'Confirm', danger 
   
   document.getElementById('confirmOverlay').classList.add('active');
   lockBodyScroll();
+  _gsapOpenOverlay(document.getElementById('confirmOverlay'));
 }
 
 function dismissConfirm() {
-  document.getElementById('confirmOverlay').classList.remove('active');
+  const overlay = document.getElementById('confirmOverlay');
   unlockBodyScroll();
+  _gsapCloseOverlay(overlay, () => overlay.classList.remove('active'));
   const cb = _cancelCallback;
   _confirmCallback = null;
   _cancelCallback = null;
@@ -114,16 +138,13 @@ function toastWithUndo(msg, icon, onUndo, duration = 5000) {
   el.className = 'toast-pill toast-pill-undo';
   el.innerHTML = `${icon ? `<span style="font-size: 1.1em;">${icon}</span>` : ''} <span>${msg}</span> <button class="toast-undo-btn" type="button">Undo</button>`;
   container.appendChild(el);
+  _animateToastIn(el);
 
   let dismissed = false;
   const dismiss = () => {
     if (dismissed) return;
     dismissed = true;
-    el.classList.add('fade-out');
-    el.addEventListener('animationend', () => {
-      el.remove();
-      if (container.children.length === 0) container.classList.remove('lifted');
-    }, { once: true });
+    _dismissToast(el, container);
   };
 
   el.querySelector('.toast-undo-btn').addEventListener('click', () => {
@@ -132,6 +153,25 @@ function toastWithUndo(msg, icon, onUndo, duration = 5000) {
   });
 
   setTimeout(dismiss, duration);
+}
+
+// Shared entrance/exit animation for both toast() and toastWithUndo() —
+// avoids duplicating the same GSAP calls twice, and replaces the previous
+// CSS-animation + animationend-listener approach with GSAP's more precise
+// onComplete-based sequencing.
+function _animateToastIn(el) {
+  if (typeof gsap === 'undefined') return;
+  gsap.from(el, { opacity: 0, y: 20, scale: 0.9, duration: 0.4, ease: 'back.out(1.4)' });
+}
+
+function _dismissToast(el, container, onDone) {
+  const cleanup = () => {
+    el.remove();
+    if (container.children.length === 0) container.classList.remove('lifted');
+    if (onDone) onDone();
+  };
+  if (typeof gsap === 'undefined') { cleanup(); return; }
+  gsap.to(el, { opacity: 0, y: 10, scale: 0.95, duration: 0.25, ease: 'power1.in', onComplete: cleanup });
 }
 
 function toast(msg, icon = '') {
@@ -158,20 +198,10 @@ function toast(msg, icon = '') {
   
   // 4. Add to screen
   container.appendChild(el);
+  _animateToastIn(el);
 
   // 5. Clean up after 2.8 seconds
-  setTimeout(() => {
-    el.classList.add('fade-out');
-    // Wait for the fade animation to finish before destroying the HTML element
-    el.addEventListener('animationend', () => {
-      el.remove();
-      
-      // Optional: If no toasts are left, remove the lifted class
-      if (container.children.length === 0) {
-        container.classList.remove('lifted');
-      }
-    });
-  }, 2800);
+  setTimeout(() => _dismissToast(el, container), 2800);
 }
 
 const TAB_ORDER = ['log', 'history', 'progress', 'settings'];
@@ -262,8 +292,10 @@ let editExerciseCount = 0;
 
 function openModal(id) {
   // 1. Show the specific modal
-  document.getElementById(id).classList.add('active');
+  const overlay = document.getElementById(id);
+  overlay.classList.add('active');
   lockBodyScroll();
+  _gsapOpenOverlay(overlay);
   
   // 2. Shrink the main app background into the distance
   const mainApp = document.getElementById('mainAppContent');
@@ -274,8 +306,9 @@ function openModal(id) {
 
 function closeModal(id) {
   // 1. Hide the specific modal
-  document.getElementById(id).classList.remove('active');
+  const overlay = document.getElementById(id);
   unlockBodyScroll();
+  _gsapCloseOverlay(overlay, () => overlay.classList.remove('active'));
   
   // 2. Bring the main app background back to the front
   const mainApp = document.getElementById('mainAppContent');

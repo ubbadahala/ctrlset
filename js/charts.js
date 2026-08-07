@@ -472,11 +472,10 @@ function toggleDetailedCharts() {
   if (!section || !chevron) return;
 
   const willOpen = section.style.display === 'none';
-  section.style.display = willOpen ? '' : 'none';
   chevron.classList.toggle('open', willOpen);
   localStorage.setItem('ctrlset_detailed_charts_open', willOpen ? '1' : '0');
 
-  if (willOpen) {
+  const resizeCharts = () => {
     // Chart.js is generally good about picking up the correct size once its
     // canvas's parent goes from display:none to visible (responsive +
     // ResizeObserver), but force a resize on each existing instance as a
@@ -485,6 +484,22 @@ function toggleDetailedCharts() {
     bwChartInstance?.resize();
     strengthChartInstance?.resize();
     radarInstance?.resize();
+  };
+
+  if (willOpen) {
+    section.style.display = '';
+    resizeCharts();
+    // Deliberately not animating height here — this section holds 4
+    // Chart.js canvases, and height is a layout-triggering property that
+    // would force a reflow of that whole subtree on every frame. A plain
+    // opacity/transform fade is cheap (compositor-only) and still gives
+    // this section real entrance polish for the first time (previously
+    // an instant, unanimated show/hide).
+    if (typeof gsap !== 'undefined') {
+      gsap.from(section, { opacity: 0, y: -8, duration: 0.3, ease: 'power1.out' });
+    }
+  } else {
+    section.style.display = 'none';
   }
 }
 

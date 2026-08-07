@@ -112,14 +112,12 @@ function renderHistory() {
   const pageItems = combined.slice((historyCurrentPage - 1) * HISTORY_PAGE_SIZE, historyCurrentPage * HISTORY_PAGE_SIZE);
 
   // 4. Render HTML
-  const itemsHtml = pageItems.map((item, idx) => {
-    const delay = `animation-delay:${idx * 40}ms;`;
-
+  const itemsHtml = pageItems.map(item => {
     // ── RENDER REST DAY ──
     if (item.type === 'rest') {
       const isActive = item.restType === 'active';
       return `
-      <div class="rest-entry glass-panel${isActive ? ' active-rest' : ''}" style="${delay}">
+      <div class="rest-entry glass-panel${isActive ? ' active-rest' : ''}">
         <div class="rest-entry-title">${isActive ? '🏃 Active Rest' : '🛋️ Complete Rest'}</div>
         <div style="display:flex; align-items:center; gap:16px;">
           <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">${formatDate(item.date)}</span>
@@ -138,7 +136,7 @@ function renderHistory() {
       .map(m => `<span class="meta-pill">${m}</span>`).join('');
 
     return `
-    <div class="workout-entry-wrap" style="${delay}">
+    <div class="workout-entry-wrap">
       <div class="swipe-delete-bg">Delete ✕</div>
       <div class="workout-entry glass-panel" id="we-${w.id}" onclick="openViewWorkout('${w.id}')">
         <div class="workout-entry-header">
@@ -167,6 +165,12 @@ function renderHistory() {
   ` : '';
 
   list.innerHTML = itemsHtml + paginationHtml;
+
+  if (typeof gsap !== 'undefined') {
+    gsap.from(list.querySelectorAll('.rest-entry, .workout-entry-wrap'), {
+      opacity: 0, y: 10, duration: 0.3, ease: 'power1.out', stagger: 0.04
+    });
+  }
 
   // Re-attach swipe-to-delete for the workouts currently on this page
   pageItems.forEach(item => {

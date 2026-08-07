@@ -1173,7 +1173,6 @@ input, select, textarea {
     border: 1px solid rgba(255, 255, 255, 0.06);
     cursor: default;
     transition: transform 0.15s, background 0.15s;
-    animation: fadeIn 0.3s ease both;
   }
   .achievement-badge.unlocked {
     background: rgba(232, 255, 71, 0.08);
@@ -1512,7 +1511,6 @@ input, select, textarea {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    animation: fadeIn 0.3s ease both;
   }
   
   .rest-entry-title {
@@ -2399,7 +2397,6 @@ input, select, textarea {
     overflow: hidden;
     border-radius: 10px;
     margin-bottom: 12px;
-    animation: fadeIn 0.3s ease both;
   }
   .swipe-delete-bg {
     position: absolute;
@@ -2488,7 +2485,6 @@ input, select, textarea {
     padding: 24px;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s ease;
   }
   .confirm-overlay.active { opacity: 1; pointer-events: auto; }
   .confirm-box {
@@ -2500,10 +2496,7 @@ input, select, textarea {
     width: 100%;
     max-width: 360px;
     box-shadow: 0 24px 60px rgba(0,0,0,0.6);
-    transform: scale(0.95) translateY(8px);
-    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
   }
-  .confirm-overlay.active .confirm-box { transform: scale(1) translateY(0); }
   .confirm-icon { font-size: 2rem; margin-bottom: 12px; line-height: 1; }
   .confirm-title {
     font-family: 'Bebas Neue', sans-serif;
@@ -2566,7 +2559,6 @@ input, select, textarea {
     justify-content: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
     padding: 20px;
   }
   .modal-overlay.active { opacity: 1; pointer-events: auto; }
@@ -2583,10 +2575,7 @@ input, select, textarea {
     overflow-y: auto;
     overscroll-behavior: contain; /* Prevents background scrolling */
     box-shadow: 0 24px 64px rgba(0,0,0,0.6);
-    transform: translateY(16px);
-    transition: transform 0.3s cubic-bezier(0.25,1,0.5,1);
   }
-  .modal-overlay.active .modal { transform: translateY(0); }
 
   .modal-header {
     display: flex;
@@ -2889,9 +2878,6 @@ input, select, textarea {
   align-items: center;
   gap: 10px;
   pointer-events: auto;
-  
-  /* Bottom-up entrance animation */
-  animation: slideUpFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .toast-undo-btn {
@@ -2908,19 +2894,6 @@ input, select, textarea {
   flex-shrink: 0;
 }
 .toast-undo-btn:hover { background: rgba(232, 255, 71, 0.22); }
-
-@keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(20px) scale(0.9); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.toast-pill.fade-out {
-  animation: fadeOutDown 0.3s ease forwards;
-}
-
-@keyframes fadeOutDown {
-  to { opacity: 0; transform: translateY(10px) scale(0.95); }
-}
 
 /* Wrap your main app content (everything except modals/nav) in a div with id="mainAppContent" */
 #mainAppContent {
