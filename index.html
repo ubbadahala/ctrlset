@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-<title>CtrlSet — Track Heavy, Lift Heavier</title>
+<title>CtrlSet: Track Heavy, Lift Heavier</title>
 <!-- The Standard SVG Favicon -->
 <link rel="icon" type="image/svg+xml" href="/appicon/ctrlset.svg">
 <!-- Fallback for older browsers -->
@@ -12,13 +12,13 @@
 <link rel="apple-touch-icon" href="/appicon/ctrlset.png">
 <!-- PWA manifest + theme color -->
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#050505">
+<meta name="theme-color" content="#131211">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CtrlSet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="css/style.css">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -26,7 +26,7 @@
   <header>
     <!-- The Left Side: Logo & Tagline Group -->
     <div class="header-brand-group">
-      <div class="logo" style="margin-bottom: 0;">CTRL<span>SET</span></div>
+      <div class="logo" style="margin-bottom: 0;"><span class="keycap-mark">^</span>CTRL<span>SET</span></div>
       <div class="header-tagline">Track heavy. Lift heavier.</div>
     </div>
     
@@ -99,20 +99,20 @@
           <div>
             <div class="session-label">Session in progress</div>
             <div class="session-clock" id="sessionClock">00:00</div>
-            <div id="sessionVolDisplay" style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--accent);letter-spacing:0.06em;margin-top:2px;">0 kg</div>
-            <div id="autosaveIndicator" style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.04em;margin-top:4px;opacity:0;transition:opacity 0.3s;">✓ Saved</div>
+            <div id="sessionVolDisplay" style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--accent);letter-spacing:0.06em;margin-top:2px;">0 kg</div>
+            <div id="autosaveIndicator" style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.04em;margin-top:4px;opacity:0;transition:opacity 0.3s;">✓ Saved</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted);">
               Started at<br><span id="sessionStartLabel" style="color:var(--text);">—</span>
             </div>
             <div class="last-session-bar" id="lastSessionBar"></div>
-            <button onclick="cancelSession()" style="background:none;border:none;font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--red);cursor:pointer;margin-top:6px;letter-spacing:0.05em;opacity:0.7;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">✕ cancel</button>
+            <button onclick="cancelSession()" style="background:none;border:none;font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--red);cursor:pointer;margin-top:6px;letter-spacing:0.05em;opacity:0.7;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">✕ cancel</button>
           </div>
         </div>
         
         <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-          <div style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Quick Rest Timer</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Quick Rest Timer</div>
           <div class="quick-timers">
             <button class="btn-timer" onclick="startTimer(60)">60s</button>
             <button class="btn-timer" onclick="startTimer(90)">90s</button>
@@ -150,7 +150,7 @@
       </div>
     </div>
 
-    <div class="card glass-panel" id="recoveryFormCard" style="border-color: rgba(68, 255, 136, 0.2);">
+    <div class="card glass-panel" id="recoveryFormCard" style="border-color: rgba(127, 174, 110, 0.2);">
       <div class="card-title" style="color: var(--green); margin-bottom: 24px;">Daily Status</div>
       
       <div class="checkin-grid">
@@ -195,7 +195,7 @@
       <div class="soreness-slider-container">
         <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
           <label style="margin-bottom: 0;">BODY SORENESS</label>
-          <span style="font-family: 'DM Mono', monospace; color: var(--green); font-size: 0.9rem;">
+          <span style="font-family: 'JetBrains Mono', monospace; color: var(--green); font-size: 0.9rem;">
             <span id="sorenessVal">5</span>/10
           </span>
         </div>
@@ -203,7 +203,7 @@
       </div>
       
       <button class="btn btn-primary" 
-              style="background: linear-gradient(135deg, var(--green), #2ecc71); color: #050505; font-weight: 700;" 
+              style="background: linear-gradient(135deg, var(--green), #6a9c5e); color: var(--accent-text); font-weight: 700;" 
               onclick="saveRecovery()">
         SYNC RECOVERY DATA
       </button>
@@ -219,7 +219,7 @@
 
     <div id="historyPanel-workouts">
       <div class="card glass-panel" style="padding:18px 24px; margin-bottom:16px;">
-        <input type="text" id="searchInput" placeholder="Search workouts…" style="margin-bottom:12px;" oninput="renderHistory()">
+        <input type="text" id="searchInput" placeholder="Search workouts…" style="margin-bottom:12px;" oninput="debouncedRenderHistory()">
         <div class="history-controls">
           <select id="historyMuscleFilter" onchange="renderHistory()" style="margin-bottom:0;flex:1;min-width:110px;font-size:0.78rem;padding:9px 10px;">
             <option value="">All muscles</option>
@@ -261,14 +261,16 @@
 
   <div class="view" id="view-progress">
 
-    <div class="card glass-panel" style="margin-bottom:24px;border-color:rgba(232,255,71,0.2);">
+    <div class="card glass-panel" style="margin-bottom:24px;border-color:rgba(224,138,62,0.2);">
       <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
         <span>🏅 Achievements</span>
-        <span id="achievementsCount" style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);"></span>
+        <span id="achievementsCount" style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted);"></span>
       </div>
       <div class="skeleton skeleton-chart" id="achievementsSkeleton" style="height:120px;"></div>
       <div class="achievements-grid" id="achievementsGrid" style="display:none;"></div>
     </div>
+
+    <div class="section-label">🔎 Insights</div>
 
     <div class="card glass-panel" style="margin-bottom:24px;">
       <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
@@ -279,7 +281,16 @@
       <div id="periodComparisonList" style="display:none;"></div>
     </div>
 
-    <div class="card glass-panel">
+    <div class="card glass-panel" style="margin-bottom:24px;border-color:rgba(255,179,71,0.2);">
+      <div class="card-title" style="color:var(--warning);">⚠️ Plateau Watch</div>
+      <div class="skeleton skeleton-card" id="stagnationSkeleton" style="height:70px;"></div>
+      <div id="stagnationEmpty" style="display:none;color:var(--muted);font-size:0.82rem;text-align:center;padding:12px 0;">No plateaus detected. Keep it up 💪</div>
+      <div id="stagnationList"></div>
+    </div>
+
+    <div class="section-label">📋 Overview</div>
+
+    <div class="card glass-panel" style="margin-bottom:24px;">
       <div class="card-title">Training Consistency</div>
       <p style="font-size: 0.7rem; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">Intensity based on total daily volume (Last 90 Days)</p>
 
@@ -294,16 +305,6 @@
       </div>
     </div>
 
-    <div class="card glass-panel">
-      <div class="card-title">Nutritional Consistency</div>
-      <div class="nutrition-stats-grid" id="nutritionStats">
-        </div>
-      
-      <label style="margin-top: 20px; font-size: 0.6rem;">Last 7 Days Supplement Consistency</label>
-      <div id="stackHeatmap" style="display: flex; gap: 6px; margin-top: 8px;">
-        </div>
-    </div>
-
     <div class="card glass-panel" style="margin-bottom:24px;">
       <div class="card-title">Personal Records</div>
       <div class="skeleton skeleton-chart" id="prSkeleton" style="height:160px;"></div>
@@ -313,96 +314,112 @@
       </div>
     </div>
 
-    <div class="card glass-panel" style="margin-bottom:24px;border-color:rgba(255,179,71,0.2);">
-      <div class="card-title" style="color:#ffb347;">⚠️ Plateau Watch</div>
-      <div class="skeleton skeleton-card" id="stagnationSkeleton" style="height:70px;"></div>
-      <div id="stagnationEmpty" style="display:none;color:var(--muted);font-size:0.82rem;text-align:center;padding:12px 0;">No plateaus detected — keep it up 💪</div>
-      <div id="stagnationList"></div>
-    </div>
+    <button class="progress-section-toggle" id="detailedChartsToggle" onclick="toggleDetailedCharts()">
+      <span>📊 Detailed Charts</span>
+      <span class="progress-section-chevron" id="detailedChartsChevron">▾</span>
+    </button>
 
-    <div class="card glass-panel">
-      <div class="card-title">Muscle Group Distribution</div>
-      <div class="skeleton skeleton-chart" id="radarSkeleton"></div>
-      <div class="radar-container" id="radarContainer" style="display:none;">
-        <canvas id="muscleRadarChart"></canvas>
+    <div id="detailedChartsSection" style="display:none;">
+
+      <div class="card glass-panel">
+        <div class="card-title">Nutritional Consistency</div>
+        <div class="nutrition-stats-grid" id="nutritionStats">
+          </div>
+        
+        <label style="margin-top: 20px; font-size: 0.6rem;">Last 7 Days Supplement Consistency</label>
+        <div id="stackHeatmap" style="display: flex; gap: 6px; margin-top: 8px;">
+          </div>
       </div>
-    </div>
 
-    <div class="card glass-panel chart-container-glass">
-      <div class="card-title">Strength Over Time</div>
-      <div class="skeleton skeleton-chart" id="strengthSkeleton"></div>
-      <div id="strengthContent" style="display:none;">
-        <div class="strength-exercise-picker">
-          <select id="strengthExercisePicker" onchange="renderStrengthChart()" style="margin-bottom:0;font-size:0.82rem;">
-            <option value="">Pick an exercise…</option>
-          </select>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="strengthChart" style="max-height:200px;"></canvas>
+      <div class="card glass-panel">
+        <div class="card-title">Muscle Group Distribution</div>
+        <div class="skeleton skeleton-chart" id="radarSkeleton"></div>
+        <div class="radar-container" id="radarContainer" style="display:none;">
+          <canvas id="muscleRadarChart"></canvas>
         </div>
       </div>
-    </div>
 
-    <div class="card glass-panel chart-container-glass">
-      <div class="card-title">Bodyweight Trend</div>
-      <div class="skeleton skeleton-chart" id="bwSkeleton" style="height:180px;"></div>
-      <div class="bw-chart-wrap glass-panel" id="bwChartWrap" style="padding:16px;display:none;">
-        <canvas id="bwChart" style="max-height:180px;"></canvas>
-      </div>
-    </div>
-
-    <div class="card glass-panel chart-container-glass">
-      <div class="card-title">Volume by Muscle Group</div>
-      <div class="skeleton skeleton-chart" id="volumeChartSkeleton"></div>
-      <div id="volumeChartContent" style="display:none;">
-        <div class="legend-overlay" id="chartLegend"></div>
-
-        <div class="chart-controls">
-          <button class="chart-btn active" onclick="setChartRange('4w', this)">4 Weeks</button>
-          <button class="chart-btn" onclick="setChartRange('3m', this)">3 Months</button>
-        </div>
-
-        <div class="chart-controls" id="chartMuscleFilter" style="margin-top:-8px;margin-bottom:16px;"></div>
-
-        <div class="chart-wrap">
-          <canvas id="volumeChart"></canvas>
+      <div class="card glass-panel chart-container-glass">
+        <div class="card-title">Strength Over Time</div>
+        <div class="skeleton skeleton-chart" id="strengthSkeleton"></div>
+        <div id="strengthContent" style="display:none;">
+          <div class="strength-exercise-picker">
+            <select id="strengthExercisePicker" onchange="renderStrengthChart()" style="margin-bottom:0;font-size:0.82rem;">
+              <option value="">Pick an exercise…</option>
+            </select>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="strengthChart" style="max-height:200px;"></canvas>
+          </div>
         </div>
       </div>
+
+      <div class="card glass-panel chart-container-glass">
+        <div class="card-title">Bodyweight Trend</div>
+        <div class="skeleton skeleton-chart" id="bwSkeleton" style="height:180px;"></div>
+        <div class="bw-chart-wrap glass-panel" id="bwChartWrap" style="padding:16px;display:none;">
+          <canvas id="bwChart" style="max-height:180px;"></canvas>
+        </div>
+      </div>
+
+      <div class="card glass-panel chart-container-glass">
+        <div class="card-title">Volume by Muscle Group</div>
+        <div class="skeleton skeleton-chart" id="volumeChartSkeleton"></div>
+        <div id="volumeChartContent" style="display:none;">
+          <div class="legend-overlay" id="chartLegend"></div>
+
+          <div class="chart-controls">
+            <button class="chart-btn active" onclick="setChartRange('4w', this)">4 Weeks</button>
+            <button class="chart-btn" onclick="setChartRange('3m', this)">3 Months</button>
+          </div>
+
+          <div class="chart-controls" id="chartMuscleFilter" style="margin-top:-8px;margin-bottom:16px;"></div>
+
+          <div class="chart-wrap">
+            <canvas id="volumeChart"></canvas>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <div class="view" id="view-settings">
 
-    <div class="card glass-panel" style="border-color:rgba(232,255,71,0.2);">
+    <div class="card glass-panel" style="border-color:rgba(224,138,62,0.2);">
       <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
         <span>📖 Help & Tutorial</span>
       </div>
-      <p style="font-size:0.85rem;color:var(--text);opacity:0.8;margin-bottom:14px;">A quick walkthrough of every feature — logging, recovery, readiness, achievements, reminders, and more.</p>
+      <p style="font-size:0.85rem;color:var(--text);opacity:0.8;margin-bottom:14px;">A quick walkthrough of every feature: logging, recovery, readiness, achievements, reminders, and more.</p>
       <button class="btn btn-primary" style="width:100%;" onclick="openTutorial()">Open Tutorial</button>
     </div>
+
+    <div class="section-label">👤 Account</div>
 
     <div class="card glass-panel">
       <div class="card-title" style="color:var(--accent);">Account</div>
       
       <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
-        <div style="background: rgba(232,255,71,0.1); color: var(--accent); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+        <div style="background: rgba(224,138,62,0.1); color: var(--accent); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
           👤
         </div>
         <div>
-          <div style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px;">Logged in as</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px;">Logged in as</div>
           <div id="currentUserEmail" style="font-size:0.95rem; color:var(--text); font-weight:500;">Loading...</div>
         </div>
       </div>
 
-      <button class="btn btn-ghost" style="width:100%; border-color: rgba(255,68,68,0.3); color: #ff7777;" onclick="handleLogout()">🚪 Log Out</button>
+      <button class="btn btn-ghost" style="width:100%; border-color: rgba(193,84,74,0.3); color: var(--red);" onclick="handleLogout()">🚪 Log Out</button>
     </div>
+
+    <div class="section-label">⚙️ Preferences</div>
 
     <div class="card glass-panel">
       <div class="card-title">Appearance</div>
       <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;">
         <div>
           <div style="font-size:0.9rem;color:var(--text);">Light Mode</div>
-          <div style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);margin-top:2px;">Switch between dark and light theme</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);margin-top:2px;">Switch between dark and light theme</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="lightModeToggle" onchange="toggleLightMode(this.checked)">
@@ -418,12 +435,12 @@
         <input type="number" inputmode="decimal" id="weeklyTargetInput" placeholder="e.g. 10000" style="margin-bottom:0;flex:1;" min="0" step="500">
         <button class="btn btn-primary" style="width:auto;padding:10px 18px;white-space:nowrap;" onclick="saveWeeklyTarget()">Save</button>
       </div>
-      <div id="weeklyTargetHint" style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);margin-top:8px;"></div>
+      <div id="weeklyTargetHint" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);margin-top:8px;"></div>
     </div>
 
     <div class="card glass-panel">
       <div class="card-title">Workout Reminders</div>
-      <p style="font-size:0.85rem;color:var(--text);opacity:0.8;margin-bottom:14px;">Get a notification on your usual training days if you haven't logged a workout yet — even if CtrlSet is fully closed. On iOS, this requires installing CtrlSet to your home screen first (iOS 16.4+).</p>
+      <p style="font-size:0.85rem;color:var(--text);opacity:0.8;margin-bottom:14px;">Get a notification on your usual training days if you haven't logged a workout yet, even if CtrlSet is fully closed. On iOS, this requires installing CtrlSet to your home screen first (iOS 16.4+).</p>
 
       <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;margin-bottom:14px;">
         <div style="font-size:0.9rem;color:var(--text);">Enable Reminders</div>
@@ -444,8 +461,10 @@
         <button type="button" class="day-pill" data-day="6" onclick="toggleTrainingDay(this)">Sat</button>
       </div>
       <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="saveReminderSettings()">Save Reminder Settings</button>
-      <div id="remindersHint" style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);margin-top:8px;"></div>
+      <div id="remindersHint" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);margin-top:8px;"></div>
     </div>
+
+    <div class="section-label">🏋️ Exercises</div>
 
     <div class="card glass-panel">
       <div class="card-title">Exercise Database</div>
@@ -468,6 +487,8 @@
       <button class="btn btn-ghost" style="width:100%; margin-top:20px; font-size: 0.75rem; padding: 12px;" onclick="restoreDefaultExercises()">↺ Restore Default List</button>
     </div>
 
+    <div class="section-label">💾 Data</div>
+
     <div class="card glass-panel">
       <div class="card-title">Data & Backup</div>
       <p style="font-size:0.85rem; color:var(--text); opacity:0.8; margin-bottom:16px;">Export your workout logs to keep them safe, or import an existing backup.</p>
@@ -479,7 +500,7 @@
       <input type="file" id="importFile" accept=".json" style="padding: 10px; margin-bottom: 12px;">
       <button class="btn btn-ghost" style="width:100%; margin-bottom:36px;" onclick="importJSON()">⬆️ Import Backup</button>
 
-      <div class="card-title" style="color:var(--red); border-color:rgba(255,68,68,0.3);">Danger Zone</div>
+      <div class="card-title" style="color:var(--red); border-color:rgba(193,84,74,0.3);">Danger Zone</div>
       <p style="font-size:0.85rem; color:var(--text); opacity:0.8; margin-bottom:16px;">This will permanently delete all your workout data. Be sure to export a backup first.</p>
       <button class="btn btn-danger" style="width:100%; padding: 14px;" onclick="clearAllData()">🗑️ Delete All Data</button>
     </div>
@@ -494,7 +515,7 @@
 <div class="recap-overlay" id="recapOverlay">
   <div class="recap-inner">
     <div class="recap-hero">
-      <div style="font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Session Complete</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Session Complete</div>
       <div class="recap-title" id="recapWorkoutName">Push Day</div>
       <div class="recap-subtitle" id="recapDate"></div>
     </div>
@@ -524,7 +545,7 @@
 </div>
 
 <!-- ── AUTHENTICATION & WELCOME OVERLAY ── -->
-<div class="modal-overlay active" id="authOverlay" style="z-index: 9999; background: rgba(5,5,5,0.85); backdrop-filter: blur(12px);">
+<div class="modal-overlay active" id="authOverlay" style="z-index: 9999; background: rgba(5,5,5,0.9);">
   <div class="auth-modal" style="position: relative; overflow: hidden;">
     
     <!-- ========================================== -->
@@ -552,7 +573,7 @@
 
       <!-- Smaller Branding for Form -->
       <div class="logo" style="margin-bottom: 4px; font-size: 1.8rem;">Ctrl<span>Set</span></div>
-      <p id="authFormSubtitle" style="font-family:'DM Mono',monospace; font-size:0.75rem; color:var(--muted); margin-bottom: 24px; letter-spacing:0.1em; text-transform:uppercase;">Sign In to Continue</p>
+      <p id="authFormSubtitle" style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--muted); margin-bottom: 24px; letter-spacing:0.1em; text-transform:uppercase;">Sign In to Continue</p>
       
       <!-- Email Input -->
       <div class="input-group">
@@ -572,7 +593,7 @@
         <button id="authSubmitBtn" class="btn btn-auth btn-auth-primary" onclick="handleLogin()">Sign In</button>
       </div>
       
-      <div id="authError" style="color: #ff4d4d; background: rgba(255, 77, 77, 0.1); padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-top: 16px; display: none; border: 1px solid rgba(255, 77, 77, 0.2);"></div>
+      <div id="authError" style="color: var(--red); background: rgba(193, 84, 74, 0.1); padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-top: 16px; display: none; border: 1px solid rgba(193, 84, 74, 0.2);"></div>
     </div>
 
     <!-- ========================================== -->
@@ -582,7 +603,7 @@
       <div style="font-size: 4rem; margin-bottom: 16px; line-height: 1; animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);">✉️</div>
       
       <!-- Match the new branding -->
-      <div style="font-family: 'DM Mono', monospace; font-size: 1.5rem; font-weight: bold; color: #d4ff00; letter-spacing: 0.05em; margin-bottom: 12px; text-transform: uppercase;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: bold; color: var(--accent); letter-spacing: 0.05em; margin-bottom: 12px; text-transform: uppercase;">
         Check Your Email
       </div>
       
@@ -607,7 +628,7 @@
       <button class="modal-close" onclick="closeModal('viewWorkoutModal')">✕</button>
     </div>
     
-    <div style="margin-bottom: 16px; font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--muted);">
+    <div style="margin-bottom: 16px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--muted);">
       <span id="viewWDate"></span> • <span id="viewWDuration"></span> min • <span id="viewWVolume"></span> kg
     </div>
 
@@ -705,11 +726,11 @@
     <div class="soreness-slider-container" style="margin-top:4px;">
       <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
         <label style="margin-bottom:0;">BODY SORENESS</label>
-        <span style="font-family:'DM Mono',monospace;color:var(--green);font-size:0.9rem;"><span id="editSorenessVal">5</span>/10</span>
+        <span style="font-family:'JetBrains Mono',monospace;color:var(--green);font-size:0.9rem;"><span id="editSorenessVal">5</span>/10</span>
       </div>
       <input type="range" id="editRSoreness" min="1" max="10" value="5" oninput="document.getElementById('editSorenessVal').innerText=this.value">
     </div>
-    <button class="btn btn-primary" style="background:linear-gradient(135deg,var(--green),#2ecc71);color:#050505;font-weight:700;margin-top:4px;" onclick="saveEditedRecovery()">Save Changes</button>
+    <button class="btn btn-primary" style="background:linear-gradient(135deg,var(--green),#6a9c5e);color:var(--accent-text);font-weight:700;margin-top:4px;" onclick="saveEditedRecovery()">Save Changes</button>
   </div>
 </div>
 
@@ -727,8 +748,8 @@
           <span>🏋️ Logging a Workout</span><span class="tutorial-chevron">▾</span>
         </button>
         <div class="tutorial-section-body">
-          <p>Name your workout, add exercises, and log sets as you go. Exercise names are a searchable pick-list — type to filter your existing exercises, or add a new one in Settings first if it's not there yet.</p>
-          <p>Each set shows a live delta against your last session, so you know instantly if you're up, down, or matching. Tap <strong>🔁 Repeat Workout</strong> next to the name field to reload a past routine's exercises into a fresh draft — weights start blank so you enter today's numbers on purpose.</p>
+          <p>Name your workout, add exercises, and log sets as you go. Exercise names are a searchable pick-list. Type to filter your existing exercises, or add a new one in Settings first if it's not there yet.</p>
+          <p>Each set shows a live delta against your last session, so you know instantly if you're up, down, or matching. Tap <strong>🔁 Repeat Workout</strong> next to the name field to reload a past routine's exercises into a fresh draft. Weights start blank so you enter today's numbers on purpose.</p>
         </div>
       </div>
 
@@ -737,7 +758,7 @@
           <span>💤 Recovery & Rest Days</span><span class="tutorial-chevron">▾</span>
         </button>
         <div class="tutorial-section-body">
-          <p>Log sleep, protein, bodyweight, supplements, and soreness in the Daily Status card. On rest days, use <strong>Log Rest Day</strong> and pick Active Rest (cardio, walk, mobility) or Complete Rest — you can switch a rest day's type later without deleting it.</p>
+          <p>Log sleep, protein, bodyweight, supplements, and soreness in the Daily Status card. On rest days, use <strong>Log Rest Day</strong> and pick Active Rest (cardio, walk, mobility) or Complete Rest. You can switch a rest day's type later without deleting it.</p>
           <p>A banner will gently remind you on the Log page if you haven't logged recovery in a day or two.</p>
         </div>
       </div>
@@ -765,7 +786,7 @@
           <span>📜 History & Recap</span><span class="tutorial-chevron">▾</span>
         </button>
         <div class="tutorial-section-body">
-          <p>History splits into Workouts and Recovery tabs — filter by muscle group, date range, or search. Tap any workout to view, edit, delete (with a few seconds to Undo), or share it as an image.</p>
+          <p>History splits into Workouts and Recovery tabs. Filter by muscle group, date range, or search. Tap any workout to view, edit, delete (with a few seconds to Undo), or share it as an image.</p>
           <p>Ending a session shows a recap with your session's exercises, volume, and any new PRs.</p>
         </div>
       </div>
@@ -775,7 +796,7 @@
           <span>📊 Progress, Achievements & Plateau Watch</span><span class="tutorial-chevron">▾</span>
         </button>
         <div class="tutorial-section-body">
-          <p>The Progress tab has your training heatmap, personal records, muscle group distribution, strength trends, bodyweight trend, and a This-Month-vs-Last-Month comparison — with a one-tap <strong>📸 Share</strong> to export it as a poster.</p>
+          <p>The Progress tab has your training heatmap, personal records, muscle group distribution, strength trends, bodyweight trend, and a This-Month-vs-Last-Month comparison, with a one-tap <strong>📸 Share</strong> to export it as a poster.</p>
           <p><strong>Achievements</strong> unlock automatically as you hit workout, streak, volume, and PR milestones. <strong>Plateau Watch</strong> flags any exercise stuck at the same weight for 3+ sessions with a suggested deload.</p>
         </div>
       </div>
@@ -785,7 +806,7 @@
           <span>🔔 Reminders & Notifications</span><span class="tutorial-chevron">▾</span>
         </button>
         <div class="tutorial-section-body">
-          <p>In Settings → Workout Reminders, pick your usual training days and enable notifications — CtrlSet will nudge you if you haven't logged a workout yet on one of those days, even if the app is closed.</p>
+          <p>In Settings → Workout Reminders, pick your usual training days and enable notifications. CtrlSet will nudge you if you haven't logged a workout yet on one of those days, even if the app is closed.</p>
         </div>
       </div>
 
@@ -794,7 +815,7 @@
           <span>💾 Backup, Import/Export & Data</span><span class="tutorial-chevron">▾</span>
         </button>
         <div class="tutorial-section-body">
-          <p>Settings lets you export a full JSON backup (or a CSV for spreadsheets) and import a JSON backup back in. "Delete All Data" wipes everything from the cloud — use it carefully.</p>
+          <p>Settings lets you export a full JSON backup (or a CSV for spreadsheets) and import a JSON backup back in. "Delete All Data" wipes everything from the cloud, so use it carefully.</p>
         </div>
       </div>
 
@@ -862,7 +883,7 @@
   <div class="confirm-box">
     <div class="confirm-icon">🔁</div>
     <div class="confirm-title">Repeat a Workout</div>
-    <div class="confirm-body">Load the exercises from a past workout into a new draft. Sets and reps carry over — weights start blank so you can decide today's numbers fresh.</div>
+    <div class="confirm-body">Load the exercises from a past workout into a new draft. Sets and reps carry over. Weights start blank so you can decide today's numbers fresh.</div>
     <select id="repeatWorkoutPicker" style="margin-bottom:16px;"></select>
     <div class="confirm-actions" style="display:flex; flex-direction:column; gap:10px;">
       <button class="confirm-btn confirm-btn-ok" style="width:100%;" onclick="loadRepeatWorkout()">Load Workout</button>
@@ -877,7 +898,7 @@
     <div class="confirm-icon">⚠️</div>
     <div class="confirm-title">Flag an Injury Concern</div>
     <div class="confirm-body">You'll see a gentle warning whenever you log this exercise. Leave blank and save to clear an existing flag.</div>
-    <textarea id="injuryNoteInput" placeholder="e.g. Aggravates my shoulder — go light or skip" rows="3" style="margin-bottom:16px;"></textarea>
+    <textarea id="injuryNoteInput" placeholder="e.g. Aggravates my shoulder, go light or skip" rows="3" style="margin-bottom:16px;"></textarea>
     <div class="confirm-actions" style="display:flex; flex-direction:column; gap:10px;">
       <button class="confirm-btn confirm-btn-ok" style="width:100%;" onclick="saveInjuryNote()">Save</button>
       <button class="confirm-btn confirm-btn-cancel" style="width:100%;" onclick="dismissInjuryNoteModal()">Cancel</button>
@@ -889,6 +910,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/auth.js"></script>
 <script src="js/state.js"></script>

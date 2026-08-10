@@ -1,35 +1,85 @@
 let _confirmCallback = null;
 let _cancelCallback = null;
 
+// ── BODY SCROLL LOCK ──
+// Counter-based so nested/rapid open-close doesn't unlock prematurely,
+// even though in practice this app always closes one overlay before
+// opening the next. Uses position:fixed rather than just overflow:hidden
+// since that's the reliable way to stop background scroll/touch
+// rubber-banding on iOS Safari specifically; scroll position is saved and
+// restored so the page doesn't visually jump on lock/unlock.
+let _scrollLockCount = 0;
+let _savedScrollY = 0;
+
+function lockBodyScroll() {
+  if (_scrollLockCount === 0) {
+    _savedScrollY = window.scrollY;
+    document.body.style.top = `-${_savedScrollY}px`;
+    document.body.classList.add('scroll-locked');
+  }
+  _scrollLockCount++;
+}
+
+function unlockBodyScroll() {
+  _scrollLockCount = Math.max(0, _scrollLockCount - 1);
+  if (_scrollLockCount === 0) {
+    document.body.classList.remove('scroll-locked');
+    document.body.style.top = '';
+    window.scrollTo(0, _savedScrollY);
+  }
+}
+
+// Shared entrance/exit for .modal-overlay and .confirm-overlay (and their
+// inner .modal/.confirm-box content boxes). These previously animated via
+// CSS transition on class toggle — not buggy on iOS the way the tab-view
+// animations were (these elements never use display:none, so there's no
+// display-switch timing issue), but consolidated here for consistency and
+// because it removes needing near-identical transition CSS on 4 different
+// selectors.
+function _gsapOpenOverlay(overlay) {
+  if (typeof gsap === 'undefined') return;
+  const inner = overlay.querySelector('.modal, .confirm-box');
+  gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: 'power1.out' });
+  if (inner) gsap.fromTo(inner, { y: 12, scale: 0.96 }, { y: 0, scale: 1, duration: 0.3, ease: 'power2.out' });
+}
+
+function _gsapCloseOverlay(overlay, onComplete) {
+  if (typeof gsap === 'undefined') { if (onComplete) onComplete(); return; }
+  gsap.to(overlay, {
+    opacity: 0, duration: 0.2, ease: 'power1.in',
+    onComplete: () => {
+      gsap.set(overlay, { clearProps: 'opacity' });
+      const inner = overlay.querySelector('.modal, .confirm-box');
+      if (inner) gsap.set(inner, { clearProps: 'transform' });
+      if (onComplete) onComplete();
+    }
+  });
+}
+
 // HELPER: Rolls numbers up smoothly
 function animateValue(elementId, endValue, duration = 800) {
   const obj = document.getElementById(elementId);
   if (!obj) return;
-  
+
   // Strip out commas if there are any to get the current integer
   const currentText = obj.innerText.replace(/,/g, '');
   const startValue = parseInt(currentText) || 0;
-  
+
   if (startValue === endValue) return; // Don't animate if nothing changed
 
-  let startTimestamp = null;
-  const step = (timestamp) => {
-    if (!startTimestamp) startTimestamp = timestamp;
-    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-    
-    // Calculate the ease-out curve so it slows down elegantly at the end
-    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-    const currentNum = Math.floor(easeOutQuart * (endValue - startValue) + startValue);
-    
-    obj.innerHTML = currentNum.toLocaleString();
-    
-    if (progress < 1) {
-      window.requestAnimationFrame(step);
-    } else {
-      obj.innerHTML = endValue.toLocaleString(); // Ensure it ends perfectly on the exact number
-    }
-  };
-  window.requestAnimationFrame(step);
+  if (typeof gsap === 'undefined') {
+    obj.innerHTML = endValue.toLocaleString();
+    return;
+  }
+
+  const counter = { value: startValue };
+  gsap.to(counter, {
+    value: endValue,
+    duration: duration / 1000, // GSAP durations are in seconds; this function's callers pass ms
+    ease: 'power4.out', // similar snap-then-settle feel to the previous manual easeOutQuart
+    onUpdate: () => { obj.innerHTML = Math.floor(counter.value).toLocaleString(); },
+    onComplete: () => { obj.innerHTML = endValue.toLocaleString(); } // exact final number, no rounding drift
+  });
 }
 
 function showConfirm({ icon = '', title, body, confirmLabel = 'Confirm', danger = false, onConfirm, onCancel = null }) {
@@ -58,10 +108,14 @@ function showConfirm({ icon = '', title, body, confirmLabel = 'Confirm', danger 
   };
   
   document.getElementById('confirmOverlay').classList.add('active');
+  lockBodyScroll();
+  _gsapOpenOverlay(document.getElementById('confirmOverlay'));
 }
 
 function dismissConfirm() {
-  document.getElementById('confirmOverlay').classList.remove('active');
+  const overlay = document.getElementById('confirmOverlay');
+  unlockBodyScroll();
+  _gsapCloseOverlay(overlay, () => overlay.classList.remove('active'));
   const cb = _cancelCallback;
   _confirmCallback = null;
   _cancelCallback = null;
@@ -84,16 +138,13 @@ function toastWithUndo(msg, icon, onUndo, duration = 5000) {
   el.className = 'toast-pill toast-pill-undo';
   el.innerHTML = `${icon ? `<span style="font-size: 1.1em;">${icon}</span>` : ''} <span>${msg}</span> <button class="toast-undo-btn" type="button">Undo</button>`;
   container.appendChild(el);
+  _animateToastIn(el);
 
   let dismissed = false;
   const dismiss = () => {
     if (dismissed) return;
     dismissed = true;
-    el.classList.add('fade-out');
-    el.addEventListener('animationend', () => {
-      el.remove();
-      if (container.children.length === 0) container.classList.remove('lifted');
-    }, { once: true });
+    _dismissToast(el, container);
   };
 
   el.querySelector('.toast-undo-btn').addEventListener('click', () => {
@@ -102,6 +153,25 @@ function toastWithUndo(msg, icon, onUndo, duration = 5000) {
   });
 
   setTimeout(dismiss, duration);
+}
+
+// Shared entrance/exit animation for both toast() and toastWithUndo() —
+// avoids duplicating the same GSAP calls twice, and replaces the previous
+// CSS-animation + animationend-listener approach with GSAP's more precise
+// onComplete-based sequencing.
+function _animateToastIn(el) {
+  if (typeof gsap === 'undefined') return;
+  gsap.from(el, { opacity: 0, y: 20, scale: 0.9, duration: 0.4, ease: 'back.out(1.4)' });
+}
+
+function _dismissToast(el, container, onDone) {
+  const cleanup = () => {
+    el.remove();
+    if (container.children.length === 0) container.classList.remove('lifted');
+    if (onDone) onDone();
+  };
+  if (typeof gsap === 'undefined') { cleanup(); return; }
+  gsap.to(el, { opacity: 0, y: 10, scale: 0.95, duration: 0.25, ease: 'power1.in', onComplete: cleanup });
 }
 
 function toast(msg, icon = '') {
@@ -128,35 +198,86 @@ function toast(msg, icon = '') {
   
   // 4. Add to screen
   container.appendChild(el);
+  _animateToastIn(el);
 
   // 5. Clean up after 2.8 seconds
-  setTimeout(() => {
-    el.classList.add('fade-out');
-    // Wait for the fade animation to finish before destroying the HTML element
-    el.addEventListener('animationend', () => {
-      el.remove();
-      
-      // Optional: If no toasts are left, remove the lifted class
-      if (container.children.length === 0) {
-        container.classList.remove('lifted');
-      }
-    });
-  }, 2800);
+  setTimeout(() => _dismissToast(el, container), 2800);
 }
 
+const TAB_ORDER = ['log', 'history', 'progress', 'settings'];
+let currentTab = 'log';
+let _tabTransitionTween = null;
+
 function switchTab(tab, btn) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('view-' + tab).classList.add('active');
-  if (btn) btn.classList.add('active');
-  
-  if (tab === 'history') { renderHistory(); renderRecoveryHistory(); }
-  if (tab === 'progress') {
-    renderProgress();
-    renderNutritionInsights();
-    renderHeatmap();
-    renderRadarChart();
+  if (tab === currentTab) return;
+
+  const oldView = document.getElementById('view-' + currentTab);
+  const newView = document.getElementById('view-' + tab);
+  if (!oldView || !newView) return;
+
+  // Fall back to an instant switch if GSAP failed to load (e.g. CDN
+  // blocked/offline on first load before the service worker has cached
+  // it) rather than leaving the app stuck mid-transition.
+  if (typeof gsap === 'undefined') {
+    oldView.classList.remove('active');
+    newView.classList.add('active');
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    if (tab === 'history') { renderHistory(); renderRecoveryHistory(); }
+    if (tab === 'progress') { renderProgress(); renderNutritionInsights(); renderHeatmap(); renderRadarChart(); }
+    return;
   }
+
+  // Guard against a rapid second tap mid-transition: kill any in-flight
+  // tween and snap every view back to a clean, non-animating state.
+  if (_tabTransitionTween) _tabTransitionTween.kill();
+  document.querySelectorAll('.view').forEach(v => gsap.set(v, { clearProps: 'transform,opacity' }));
+
+  const forward = TAB_ORDER.indexOf(tab) > TAB_ORDER.indexOf(currentTab);
+  const exitX = forward ? -24 : 24;
+  const enterFromX = forward ? 24 : -24;
+  const DURATION = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 0.18;
+
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  // GSAP animates by setting inline styles directly through its own
+  // rAF-driven ticker, rather than toggling CSS classes and hoping the
+  // display:none->block switch and the animation start land in the right
+  // order — which is exactly the WebKit quirk that made the old
+  // hand-rolled version unreliable on iOS Safari.
+  _tabTransitionTween = gsap.timeline({
+    onComplete: () => {
+      gsap.set(newView, { clearProps: 'transform,opacity' });
+      _tabTransitionTween = null;
+    }
+  })
+    // Step 1: slide the outgoing view away in the direction of travel.
+    .to(oldView, { x: exitX, opacity: 0, duration: DURATION, ease: 'power1.in' })
+    // Step 2: swap which view is visible, run the page's own render calls,
+    // and set the incoming view's starting position — all synchronously,
+    // between the two tweens.
+    .call(() => {
+      oldView.classList.remove('active');
+      gsap.set(oldView, { clearProps: 'transform,opacity' });
+
+      newView.classList.add('active');
+      window.scrollTo(0, 0); // start the new tab at the top, not wherever the previous tab had scrolled to
+      currentTab = tab;
+
+      if (tab === 'history') { renderHistory(); renderRecoveryHistory(); }
+      if (tab === 'progress') {
+        renderProgress();
+        renderNutritionInsights();
+        renderHeatmap();
+        renderRadarChart();
+      }
+
+      gsap.set(newView, { x: enterFromX, opacity: 0 });
+    })
+    // Step 3: bring the incoming view in from the opposite side.
+    .to(newView, { x: 0, opacity: 1, duration: DURATION, ease: 'power1.out' });
 }
 
 function switchHistorySubTab(subTab) {
@@ -171,7 +292,10 @@ let editExerciseCount = 0;
 
 function openModal(id) {
   // 1. Show the specific modal
-  document.getElementById(id).classList.add('active');
+  const overlay = document.getElementById(id);
+  overlay.classList.add('active');
+  lockBodyScroll();
+  _gsapOpenOverlay(overlay);
   
   // 2. Shrink the main app background into the distance
   const mainApp = document.getElementById('mainAppContent');
@@ -182,7 +306,9 @@ function openModal(id) {
 
 function closeModal(id) {
   // 1. Hide the specific modal
-  document.getElementById(id).classList.remove('active');
+  const overlay = document.getElementById(id);
+  unlockBodyScroll();
+  _gsapCloseOverlay(overlay, () => overlay.classList.remove('active'));
   
   // 2. Bring the main app background back to the front
   const mainApp = document.getElementById('mainAppContent');
@@ -280,7 +406,7 @@ document.addEventListener('click', e => {
       return; 
     }
     
-    e.target.classList.remove('active');
+    closeModal(e.target.id);
   }
 });
 
@@ -290,7 +416,7 @@ async function toggleLightMode(isLight, saveToCloud = true) {
   
   if (isLight) {
     document.body.classList.add('light-mode');
-    Chart.defaults.color = '#6b7280';
+    Chart.defaults.color = '#a8a49b';
     Chart.defaults.borderColor = 'rgba(0, 0, 0, 0.08)';
   } else {
     document.body.classList.remove('light-mode');

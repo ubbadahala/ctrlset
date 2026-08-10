@@ -129,6 +129,12 @@ function renderAchievements() {
         <div class="achievement-progress">${progressLabel}</div>
       </div>`;
   }).join('');
+
+  if (typeof gsap !== 'undefined') {
+    gsap.from(grid.querySelectorAll('.achievement-badge'), {
+      opacity: 0, y: 10, duration: 0.3, ease: 'power1.out', stagger: 0.025
+    });
+  }
 }
 
 // Called right after a new workout is saved. Diffs achievements computed

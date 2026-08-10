@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
   addExerciseBlock();
   updateStats();
   checkAndRestoreDraft();
+  initDetailedChartsState();
 
   document.getElementById('confirmOverlay').addEventListener('click', e => {
     if (e.target.id === 'confirmOverlay') dismissConfirm();

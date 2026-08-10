@@ -277,16 +277,16 @@ function renderSettingsExerciseList() {
     <div class="settings-exercise-row">
       <input type="text" value="${ex.name}" class="settings-exercise-name"
         onchange="renameExercise(${index}, this.value)"
-        onfocus="this.style.borderColor='rgba(232,255,71,0.5)'"
-        onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
+        onfocus="this.style.borderColor='rgba(224,138,62,0.5)'"
+        onblur="this.style.borderColor='var(--glass-border)'">
       <select class="settings-exercise-muscle" style="color:${ex.muscle?'var(--text)':'var(--muted)'};"
         onchange="setExerciseMuscle(${index}, this.value)"
-        onfocus="this.style.borderColor='rgba(232,255,71,0.5)'"
-        onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
-        ${MUSCLE_OPTIONS.map(m => `<option value="${m}" ${ex.muscle === m ? 'selected' : ''}>${m || '— muscle —'}</option>`).join('')}
+        onfocus="this.style.borderColor='rgba(224,138,62,0.5)'"
+        onblur="this.style.borderColor='var(--glass-border)'">
+        ${MUSCLE_OPTIONS.map(m => `<option value="${m}" ${ex.muscle === m ? 'selected' : ''}>${m || 'Select muscle'}</option>`).join('')}
       </select>
       <div class="settings-exercise-actions">
-        <button class="btn-icon" style="${ex.injuryNote ? 'background:rgba(255,107,53,0.15);border-color:rgba(255,107,53,0.4);' : ''}" onclick="setExerciseInjuryNote(${index})" title="${ex.injuryNote ? escapeHtml(ex.injuryNote) : 'Flag an injury concern'}">⚠️</button>
+        <button class="btn-icon" style="${ex.injuryNote ? 'background:rgba(201,105,79,0.15);border-color:rgba(201,105,79,0.4);' : ''}" onclick="setExerciseInjuryNote(${index})" title="${ex.injuryNote ? escapeHtml(ex.injuryNote) : 'Flag an injury concern'}">⚠️</button>
         <button class="btn-icon" onclick="removeCustomExercise(${index})">✕</button>
       </div>
     </div>
@@ -298,11 +298,16 @@ let injuryNoteEditIndex = null;
 function setExerciseInjuryNote(index) {
   injuryNoteEditIndex = index;
   document.getElementById('injuryNoteInput').value = exercisesDB[index].injuryNote || '';
-  document.getElementById('injuryNoteOverlay').classList.add('active');
+  const overlay = document.getElementById('injuryNoteOverlay');
+  overlay.classList.add('active');
+  lockBodyScroll();
+  _gsapOpenOverlay(overlay);
 }
 
 function dismissInjuryNoteModal() {
-  document.getElementById('injuryNoteOverlay').classList.remove('active');
+  const overlay = document.getElementById('injuryNoteOverlay');
+  unlockBodyScroll();
+  _gsapCloseOverlay(overlay, () => overlay.classList.remove('active'));
   injuryNoteEditIndex = null;
 }
 
@@ -533,7 +538,7 @@ async function onRemindersToggle(checked) {
 
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') {
-    toast('Notification permission denied — reminders won\'t show.');
+    toast('Notification permission denied. Reminders won\'t show.');
     document.getElementById('remindersToggle').checked = false;
   }
 }
@@ -599,7 +604,7 @@ function checkWorkoutReminder() {
   const dismissedFor = localStorage.getItem('ctrlset_workout_reminder_shown');
   if (dismissedFor === todayStr) return;
 
-  const body = "It's one of your usual training days — log today's workout on CtrlSet.";
+  const body = "It's one of your usual training days. Log today's workout on CtrlSet.";
   if (navigator.serviceWorker && navigator.serviceWorker.ready) {
     navigator.serviceWorker.ready.then(reg => {
       reg.showNotification('Time to train 💪', { body, icon: '/appicon/icon-192.png', tag: 'ctrlset-workout-reminder' });

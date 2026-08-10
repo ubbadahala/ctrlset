@@ -28,7 +28,9 @@ async function checkSession() {
     updateAccountUI();
     
     // 1. Hide the auth modal
-    document.getElementById('authOverlay').classList.remove('active');
+    const authOverlay = document.getElementById('authOverlay');
+    unlockBodyScroll();
+    _gsapCloseOverlay(authOverlay, () => authOverlay.classList.remove('active'));
     
     // 👉 2. BRING APP TO THE FRONT
     document.getElementById('mainAppContent')?.classList.remove('app-background-scaled');
@@ -36,7 +38,10 @@ async function checkSession() {
     await syncDataFromSupabase(); 
   } else {
     // 1. Show the auth modal
-    document.getElementById('authOverlay').classList.add('active');
+    const authOverlay = document.getElementById('authOverlay');
+    authOverlay.classList.add('active');
+    lockBodyScroll();
+    _gsapOpenOverlay(authOverlay);
     
     // 👉 2. PUSH APP TO THE BACKGROUND
     document.getElementById('mainAppContent')?.classList.add('app-background-scaled');
@@ -65,7 +70,9 @@ async function handleLogin() {
     updateAccountUI();
     
     // 1. Hide the Auth Modal
-    document.getElementById('authOverlay').classList.remove('active');
+    const authOverlay = document.getElementById('authOverlay');
+    unlockBodyScroll();
+    _gsapCloseOverlay(authOverlay, () => authOverlay.classList.remove('active'));
     
     // 👉 2. BRING THE APP TO THE FRONT!
     document.getElementById('mainAppContent')?.classList.remove('app-background-scaled');
@@ -102,7 +109,9 @@ async function handleSignUp() {
       updateAccountUI();
       
       // Close the modal and bring the app out of the background
-      document.getElementById('authOverlay').classList.remove('active');
+      const authOverlay = document.getElementById('authOverlay');
+      unlockBodyScroll();
+      _gsapCloseOverlay(authOverlay, () => authOverlay.classList.remove('active'));
       document.getElementById('mainAppContent')?.classList.remove('app-background-scaled');
       
       await syncDataFromSupabase();
@@ -166,7 +175,10 @@ async function handleLogout() {
   if (settingsModal) settingsModal.classList.remove('active');
 
   // 7. Show the login modal and clear inputs
-  document.getElementById('authOverlay').classList.add('active');
+  const authOverlay = document.getElementById('authOverlay');
+  authOverlay.classList.add('active');
+  lockBodyScroll();
+  _gsapOpenOverlay(authOverlay);
   document.getElementById('authPassword').value = '';
   document.getElementById('authEmail').value = '';
   

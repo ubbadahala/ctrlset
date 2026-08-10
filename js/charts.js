@@ -1,10 +1,32 @@
 let chartRange = '4w';
 let activeChartMuscle = 'All';
 
+// Chart.js needs actual computed color strings at chart-creation time — it
+// doesn't react to CSS custom properties changing later, and Chart.defaults
+// gets shadowed by any color set explicitly in a chart's own options (which
+// every chart below does, for ticks/grid/tooltip). So each chart pulls its
+// colors from here instead of hardcoding dark-mode-only values, which
+// otherwise stay unreadable (e.g. neon yellow axis labels) in light mode.
+function chartThemeColors() {
+  const isLight = document.body.classList.contains('light-mode');
+  return {
+    tickColor: isLight ? '#57621f' : 'var(--accent)',       // matches --accent's light/dark tuning
+    tickColorGreen: isLight ? '#5f8a52' : 'var(--green)',  // matches --green's light/dark tuning
+    axisLabelColor: isLight ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.4)',
+    gridColor: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
+    tooltipBg: isLight ? '#ffffff' : '#111',
+    tooltipBorder: isLight ? 'rgba(0,0,0,0.15)' : '#2a2a2a',
+    tooltipTitle: isLight ? '#1c1a16' : 'var(--accent)',
+    tooltipBody: isLight ? '#1c1a16' : '#f2f0ec',
+    mutedColor: isLight ? '#5c584f' : '#a8a49b'
+  };
+}
+
 function renderChart() {
   const canvas = document.getElementById('volumeChart');
   const wrap = canvas?.closest('.chart-wrap');
   if (!canvas || !wrap) return;
+  const tc = chartThemeColors();
 
   const volumeChartSkeleton = document.getElementById('volumeChartSkeleton');
   const volumeChartContent = document.getElementById('volumeChartContent');
@@ -70,15 +92,15 @@ function renderChart() {
     : [activeChartMuscle];
 
   const palette = {
-    'Chest':      { bg: 'rgba(232,255,71,0.7)',   border: '#e8ff47' },
-    'Back':       { bg: 'rgba(255,107,53,0.7)',   border: '#ff6b35' },
-    'Shoulders':  { bg: 'rgba(68,255,136,0.7)',   border: '#44ff88' },
+    'Chest':      { bg: 'rgba(224,138,62,0.7)',   border: 'var(--accent)' },
+    'Back':       { bg: 'rgba(201,105,79,0.7)',   border: 'var(--accent2)' },
+    'Shoulders':  { bg: 'rgba(127,174,110,0.7)',   border: 'var(--green)' },
     'Arms':       { bg: 'rgba(100,180,255,0.7)',  border: '#64b4ff' },
     'Legs':       { bg: 'rgba(200,100,255,0.7)',  border: '#c864ff' },
     'Core':       { bg: 'rgba(255,200,50,0.7)',   border: '#ffc832' },
     'Full Body':  { bg: 'rgba(255,255,255,0.5)',  border: '#ffffff' },
     'Cardio':     { bg: 'rgba(255,80,80,0.7)',    border: '#ff5050' },
-    'Other':      { bg: 'rgba(120,120,120,0.5)',  border: '#888888' },
+    'Other':      { bg: 'rgba(150,146,138,0.5)',  border: '#a8a49b' },
   };
 
   // Volume per muscle group per date — from exercise.muscle
@@ -105,7 +127,7 @@ function renderChart() {
   // Legend
   document.getElementById('chartLegend').innerHTML = muscleGroups.map(m => {
     const c = palette[m] || { border: '#ccc' };
-    return `<div class="legend-item"><span style="width:10px;height:10px;border-radius:50%;background:${c.border};box-shadow:0 0 8px ${c.border};display:inline-block;"></span> ${m}</div>`;
+    return `<div class="legend-item"><span style="width:10px;height:10px;border-radius:50%;background:${c.border};box-shadow:0 0 4px ${c.border};display:inline-block;"></span> ${m}</div>`;
   }).join('');
 
   chartInstance = new Chart(canvas, {
@@ -116,15 +138,15 @@ function renderChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#111', borderColor: '#2a2a2a', borderWidth: 1,
-          titleColor: '#e8ff47', bodyColor: '#f0f0f0',
-          titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono' },
+          backgroundColor: tc.tooltipBg, borderColor: tc.tooltipBorder, borderWidth: 1,
+          titleColor: tc.tooltipTitle, bodyColor: tc.tooltipBody,
+          titleFont: { family: 'JetBrains Mono' }, bodyFont: { family: 'JetBrains Mono' },
           callbacks: { label: ctx => `${ctx.dataset.label}: ${Math.round(ctx.raw || 0).toLocaleString()} kg` }
         }
       },
       scales: {
-        x: { stacked: true, grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { family: 'DM Mono', size: 9 } } },
-        y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#e8ff47', font: { family: 'DM Mono', size: 9 }, callback: v => v.toLocaleString() + ' kg' } }
+        x: { stacked: true, grid: { display: false }, ticks: { color: tc.axisLabelColor, font: { family: 'JetBrains Mono', size: 9 } } },
+        y: { stacked: true, grid: { color: tc.gridColor }, ticks: { color: tc.tickColor, font: { family: 'JetBrains Mono', size: 9 }, callback: v => v.toLocaleString() + ' kg' } }
       }
     }
   });
@@ -201,6 +223,7 @@ function renderBodyweightChart() {
   const canvas = document.getElementById('bwChart');
   const card = canvas?.closest('.card');
   if (!canvas) return;
+  const tc = chartThemeColors();
 
   const bwSkeleton = document.getElementById('bwSkeleton');
   const bwChartWrap = document.getElementById('bwChartWrap');
@@ -232,10 +255,10 @@ function renderBodyweightChart() {
       datasets: [{
         label: 'Bodyweight (kg)',
         data,
-        borderColor: '#44ff88',
-        backgroundColor: 'rgba(68,255,136,0.08)',
+        borderColor: 'var(--green)',
+        backgroundColor: 'rgba(127,174,110,0.08)',
         borderWidth: 2.5,
-        pointBackgroundColor: '#44ff88',
+        pointBackgroundColor: 'var(--green)',
         pointRadius: 4,
         pointHoverRadius: 6,
         tension: 0.35,
@@ -247,26 +270,26 @@ function renderBodyweightChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#111',
-          borderColor: '#2a2a2a',
+          backgroundColor: tc.tooltipBg,
+          borderColor: tc.tooltipBorder,
           borderWidth: 1,
-          titleColor: '#44ff88',
-          bodyColor: '#f0f0f0',
-          titleFont: { family: 'DM Mono' },
-          bodyFont: { family: 'DM Mono' },
+          titleColor: tc.tickColorGreen,
+          bodyColor: tc.tooltipBody,
+          titleFont: { family: 'JetBrains Mono' },
+          bodyFont: { family: 'JetBrains Mono' },
           callbacks: { label: ctx => `${ctx.raw} kg` }
         }
       },
       scales: {
         x: {
           grid: { display: false },
-          ticks: { color: 'rgba(255,255,255,0.4)', font: { family: 'DM Mono', size: 9 } }
+          ticks: { color: tc.axisLabelColor, font: { family: 'JetBrains Mono', size: 9 } }
         },
         y: {
           min: minBW,
           max: maxBW,
-          grid: { color: 'rgba(255,255,255,0.05)' },
-          ticks: { color: '#44ff88', font: { family: 'DM Mono', size: 9 }, callback: v => v + ' kg' }
+          grid: { color: tc.gridColor },
+          ticks: { color: tc.tickColorGreen, font: { family: 'JetBrains Mono', size: 9 }, callback: v => v + ' kg' }
         }
       }
     }
@@ -278,6 +301,7 @@ function renderStrengthChart() {
   const canvas = document.getElementById('strengthChart');
   const card = canvas?.closest('.card');
   if (!canvas || !picker) return;
+  const tc = chartThemeColors();
 
   const strengthSkeleton = document.getElementById('strengthSkeleton');
   const strengthContent = document.getElementById('strengthContent');
@@ -333,10 +357,10 @@ function renderStrengthChart() {
       datasets: [{
         label: name,
         data: points.map(p => p.weight),
-        borderColor: '#e8ff47',
-        backgroundColor: 'rgba(232,255,71,0.07)',
+        borderColor: 'var(--accent)',
+        backgroundColor: 'rgba(224,138,62,0.07)',
         borderWidth: 2.5,
-        pointBackgroundColor: points.map((_, i) => isPR[i] ? '#e8ff47' : 'rgba(232,255,71,0.4)'),
+        pointBackgroundColor: points.map((_, i) => isPR[i] ? 'var(--accent)' : 'rgba(224,138,62,0.4)'),
         pointRadius: points.map((_, i) => isPR[i] ? 6 : 4),
         pointHoverRadius: 7,
         tension: 0.3,
@@ -348,9 +372,9 @@ function renderStrengthChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#111', borderColor: '#2a2a2a', borderWidth: 1,
-          titleColor: '#e8ff47', bodyColor: '#f0f0f0',
-          titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono' },
+          backgroundColor: tc.tooltipBg, borderColor: tc.tooltipBorder, borderWidth: 1,
+          titleColor: tc.tickColor, bodyColor: tc.tooltipBody,
+          titleFont: { family: 'JetBrains Mono' }, bodyFont: { family: 'JetBrains Mono' },
           callbacks: {
             label: ctx => {
               const p = points[ctx.dataIndex];
@@ -360,8 +384,8 @@ function renderStrengthChart() {
         }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { family: 'DM Mono', size: 9 } } },
-        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#e8ff47', font: { family: 'DM Mono', size: 9 }, callback: v => v + ' kg' } }
+        x: { grid: { display: false }, ticks: { color: tc.axisLabelColor, font: { family: 'JetBrains Mono', size: 9 } } },
+        y: { grid: { color: tc.gridColor }, ticks: { color: tc.tickColor, font: { family: 'JetBrains Mono', size: 9 }, callback: v => v + ' kg' } }
       }
     }
   });
@@ -380,6 +404,7 @@ function renderRadarChart() {
   const canvas = document.getElementById('muscleRadarChart');
   const card = canvas?.closest('.card');
   if (!canvas) return;
+  const tc = chartThemeColors();
 
   const radarSkeleton = document.getElementById('radarSkeleton');
   const radarContainer = document.getElementById('radarContainer');
@@ -413,9 +438,9 @@ function renderRadarChart() {
       datasets: [{
         label: 'Volume (kg)',
         data: Object.values(distribution),
-        backgroundColor: 'rgba(232,255,71,0.2)',
-        borderColor: '#e8ff47',
-        pointBackgroundColor: '#e8ff47',
+        backgroundColor: 'rgba(224,138,62,0.2)',
+        borderColor: 'var(--accent)',
+        pointBackgroundColor: 'var(--accent)',
         borderWidth: 2
       }]
     },
@@ -423,22 +448,71 @@ function renderRadarChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#111', borderColor: '#2a2a2a', borderWidth: 1,
-          titleColor: '#e8ff47', bodyColor: '#f0f0f0',
-          titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono' },
+          backgroundColor: tc.tooltipBg, borderColor: tc.tooltipBorder, borderWidth: 1,
+          titleColor: tc.tickColor, bodyColor: tc.tooltipBody,
+          titleFont: { family: 'JetBrains Mono' }, bodyFont: { family: 'JetBrains Mono' },
           callbacks: { label: ctx => `${Math.round(ctx.raw).toLocaleString()} kg` }
         }
       },
       scales: {
         r: {
-          angleLines: { color: 'rgba(255,255,255,0.1)' },
-          grid: { color: 'rgba(255,255,255,0.1)' },
-          pointLabels: { color: '#888', font: { family: 'DM Mono' } },
+          angleLines: { color: tc.gridColor },
+          grid: { color: tc.gridColor },
+          pointLabels: { color: tc.mutedColor, font: { family: 'JetBrains Mono' } },
           ticks: { display: false }
         }
       }
     }
   });
+}
+
+function toggleDetailedCharts() {
+  const section = document.getElementById('detailedChartsSection');
+  const chevron = document.getElementById('detailedChartsChevron');
+  if (!section || !chevron) return;
+
+  const willOpen = section.style.display === 'none';
+  chevron.classList.toggle('open', willOpen);
+  localStorage.setItem('ctrlset_detailed_charts_open', willOpen ? '1' : '0');
+
+  const resizeCharts = () => {
+    // Chart.js is generally good about picking up the correct size once its
+    // canvas's parent goes from display:none to visible (responsive +
+    // ResizeObserver), but force a resize on each existing instance as a
+    // safety net in case any of them rendered at 0x0 while hidden.
+    chartInstance?.resize();
+    bwChartInstance?.resize();
+    strengthChartInstance?.resize();
+    radarInstance?.resize();
+  };
+
+  if (willOpen) {
+    section.style.display = '';
+    resizeCharts();
+    // Deliberately not animating height here — this section holds 4
+    // Chart.js canvases, and height is a layout-triggering property that
+    // would force a reflow of that whole subtree on every frame. A plain
+    // opacity/transform fade is cheap (compositor-only) and still gives
+    // this section real entrance polish for the first time (previously
+    // an instant, unanimated show/hide).
+    if (typeof gsap !== 'undefined') {
+      gsap.from(section, { opacity: 0, y: -8, duration: 0.3, ease: 'power1.out' });
+    }
+  } else {
+    section.style.display = 'none';
+  }
+}
+
+// Restores the user's last expand/collapse choice for Detailed Charts.
+// Collapsed by default for first-time users (keeps the Progress page
+// shorter, with hierarchy: hero -> insights -> overview -> detail).
+function initDetailedChartsState() {
+  const section = document.getElementById('detailedChartsSection');
+  const chevron = document.getElementById('detailedChartsChevron');
+  if (!section || !chevron) return;
+  const shouldBeOpen = localStorage.getItem('ctrlset_detailed_charts_open') === '1';
+  section.style.display = shouldBeOpen ? '' : 'none';
+  chevron.classList.toggle('open', shouldBeOpen);
 }
 
 function renderStagnationCard() {

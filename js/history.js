@@ -13,6 +13,16 @@ function changeHistoryPage(delta) {
   renderHistory();
 }
 
+let _historySearchDebounce = null;
+function debouncedRenderHistory() {
+  // Search re-renders the full (now stagger-animated) list on every
+  // keystroke otherwise — debouncing means the list only actually
+  // re-renders (and re-animates) once typing pauses, rather than on
+  // every character.
+  clearTimeout(_historySearchDebounce);
+  _historySearchDebounce = setTimeout(renderHistory, 250);
+}
+
 function renderHistory() {
   const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
   const muscleFilter = document.getElementById('historyMuscleFilter')?.value || '';
@@ -81,7 +91,7 @@ function renderHistory() {
     list.innerHTML = `
       <div style="text-align: center; padding: 60px 20px; animation: fadeIn 0.5s ease;">
         <div style="font-size: 3.5rem; margin-bottom: 16px; filter: grayscale(1) opacity(0.5);">🏋️</div>
-        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--text); letter-spacing: 0.05em; margin-bottom: 8px;">The CtrlSet Awaits</h3>
+        <h3 style="font-family:'Outfit', sans-serif; font-weight:700; font-size: 1.8rem; color: var(--text); letter-spacing: 0.05em; margin-bottom: 8px;">The CtrlSet Awaits</h3>
         <p style="font-size: 0.95rem; color: var(--muted); line-height: 1.5; max-width: 250px; margin: 0 auto;">
           ${isTotallyEmpty 
             ? 'You haven\'t logged any workouts yet. Hit "Start Session" to begin building your legacy.' 
@@ -110,7 +120,7 @@ function renderHistory() {
       <div class="rest-entry glass-panel${isActive ? ' active-rest' : ''}">
         <div class="rest-entry-title">${isActive ? '🏃 Active Rest' : '🛋️ Complete Rest'}</div>
         <div style="display:flex; align-items:center; gap:16px;">
-          <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">${formatDate(item.date)}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--muted);">${formatDate(item.date)}</span>
           <button class="btn-icon" style="width:32px; height:32px; margin-bottom:0; font-size:0.85rem;" onclick="toggleRestDayType('${item.date}')" title="Switch to ${isActive ? 'Complete' : 'Active'} Rest">🔄</button>
           <button class="btn-icon" style="width:32px; height:32px; margin-bottom:0; font-size:0.85rem;" onclick="removeRestDay('${item.date}')" title="Delete Rest Day">✕</button>
         </div>
@@ -140,7 +150,7 @@ function renderHistory() {
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div class="exercise-chips">${chips}</div>
-          <span style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--text);opacity:0.6;">${formatDate(w.date)}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text);opacity:0.6;">${formatDate(w.date)}</span>
         </div>
       </div>
     </div>`;
@@ -155,6 +165,12 @@ function renderHistory() {
   ` : '';
 
   list.innerHTML = itemsHtml + paginationHtml;
+
+  if (typeof gsap !== 'undefined') {
+    gsap.from(list.querySelectorAll('.rest-entry, .workout-entry-wrap'), {
+      opacity: 0, y: 10, duration: 0.3, ease: 'power1.out', stagger: 0.04
+    });
+  }
 
   // Re-attach swipe-to-delete for the workouts currently on this page
   pageItems.forEach(item => {
@@ -189,9 +205,9 @@ function renderRecoveryHistory() {
   }
   if (card) card.style.display = '';
   list.innerHTML = sorted.map(r => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--glass-border);">
       <div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);margin-bottom:4px;">${formatDate(r.date)}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted);margin-bottom:4px;">${formatDate(r.date)}</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;">
           ${r.sleep ? `<span class="chip">😴 ${r.sleep}h sleep</span>` : ''}
           ${r.protein ? `<span class="chip">🥩 ${r.protein}g protein</span>` : ''}
@@ -251,11 +267,11 @@ function renderPRs() {
     <div class="pr-card glass-panel">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
         <div class="pr-exercise">${pr.name}</div>
-        <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);background:rgba(255,255,255,0.05);padding:2px 7px;border-radius:10px;white-space:nowrap;">${pr.muscle}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);background:var(--glass-border);padding:2px 7px;border-radius:10px;white-space:nowrap;">${pr.muscle}</span>
       </div>
       <div class="pr-weight">${pr.weight} <span style="font-size:1rem;color:var(--text);opacity:0.5;">kg</span></div>
       <div class="pr-detail">${pr.sets}×${pr.reps} · ${formatDate(pr.date)}</div>
-      <div style="margin-top:12px;display:inline-block;background:rgba(232,255,71,0.1);border:1px solid rgba(232,255,71,0.2);color:var(--accent);padding:4px 8px;border-radius:6px;font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.05em;">
+      <div style="margin-top:12px;display:inline-block;background:rgba(224,138,62,0.1);border:1px solid rgba(224,138,62,0.2);color:var(--accent);padding:4px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.05em;">
         EST 1RM: <strong>${oneRM} KG</strong>
       </div>
     </div>`;
@@ -289,7 +305,7 @@ function computeReadiness() {
   if (hasRecentLog) {
     if (latestLog.sleep > 0) {
       if (latestLog.sleep < 6) { flags++; reasons.push(`Only ${latestLog.sleep}h sleep logged`); }
-      else if (latestLog.sleep < 7) { cautions++; reasons.push(`${latestLog.sleep}h sleep — a bit short`); }
+      else if (latestLog.sleep < 7) { cautions++; reasons.push(`${latestLog.sleep}h sleep, a bit short`); }
     }
     if (latestLog.soreness >= 7) { flags++; reasons.push(`High soreness logged (${latestLog.soreness}/10)`); }
     else if (latestLog.soreness >= 5) { cautions++; reasons.push(`Moderate soreness logged (${latestLog.soreness}/10)`); }
@@ -334,9 +350,9 @@ function renderReadinessCard() {
   card.classList.add(`readiness-${level}`);
 
   const copy = {
-    fresh: { icon: '💪', text: 'Fresh — ready to train' },
-    moderate: { icon: '⚖️', text: 'Moderate — listen to your body' },
-    fatigued: { icon: '😴', text: 'Fatigued — consider a lighter session or rest' }
+    fresh: { icon: '💪', text: 'Fresh, ready to train' },
+    moderate: { icon: '⚖️', text: 'Moderate, listen to your body' },
+    fatigued: { icon: '😴', text: 'Fatigued, consider a lighter session or rest' }
   }[level];
 
   icon.textContent = copy.icon;
@@ -362,7 +378,7 @@ function checkRecoveryReminder() {
     // Never logged recovery at all — only nudge once the user has at least
     // one workout, so brand-new users aren't hit with this on their first visit.
     if (!workouts.length) { banner.style.display = 'none'; return; }
-    textEl.textContent = "💤 You haven't logged any recovery data yet — tap to start tracking sleep, protein & more";
+    textEl.textContent = "💤 You haven't logged any recovery data yet. Tap to start tracking sleep, protein & more";
     banner.style.display = 'flex';
     return;
   }
@@ -374,8 +390,8 @@ function checkRecoveryReminder() {
   }
 
   textEl.textContent = daysSince === 1
-    ? "💤 You haven't logged recovery today — keep the streak going"
-    : `💤 You haven't logged recovery in ${daysSince} days — tap to catch up`;
+    ? "💤 You haven't logged recovery today. Keep the streak going"
+    : `💤 You haven't logged recovery in ${daysSince} days. Tap to catch up`;
   banner.style.display = 'flex';
 }
 
@@ -459,7 +475,7 @@ function renderNutritionInsights() {
         flex: 1; 
         height: 12px; 
         border-radius: 3px; 
-        background: ${active ? 'var(--green)' : 'rgba(255,255,255,0.05)'};
+        background: ${active ? 'var(--green)' : 'var(--glass-border)'};
         box-shadow: ${active ? '0 0 8px var(--green)' : 'none'};
         opacity: ${active ? '0.8' : '1'};
       " title="${date}"></div>
@@ -559,6 +575,7 @@ function peekHistory(id) {
 function attachSwipeDelete(el, workoutId) {
   let startX = 0, currentX = 0, isDragging = false;
   const THRESHOLD = 80;
+  const deleteBg = el.parentElement?.querySelector('.swipe-delete-bg');
 
   el.addEventListener('touchstart', e => {
     startX = e.touches[0].clientX;
@@ -568,7 +585,10 @@ function attachSwipeDelete(el, workoutId) {
   el.addEventListener('touchmove', e => {
     if (!isDragging) return;
     currentX = e.touches[0].clientX - startX;
-    if (currentX < 0) el.style.transform = `translateX(${Math.max(currentX, -120)}px)`;
+    if (currentX < 0) {
+      el.style.transform = `translateX(${Math.max(currentX, -120)}px)`;
+      if (deleteBg) deleteBg.style.opacity = '1';
+    }
   }, { passive: true });
 
   el.addEventListener('touchend', () => {
@@ -578,14 +598,18 @@ function attachSwipeDelete(el, workoutId) {
       showConfirm({
         icon: '🗑️',
         title: 'Delete Workout',
-        body: 'This workout will be permanently removed.',
+        body: 'This workout will be removed. You can undo for a few seconds after.',
         confirmLabel: 'Delete',
         danger: true,
         onConfirm: () => deleteWorkout(workoutId),
-        onCancel: () => { el.style.transform = ''; }
+        onCancel: () => {
+          el.style.transform = '';
+          if (deleteBg) deleteBg.style.opacity = '0';
+        }
       });
     } else {
       el.style.transform = '';
+      if (deleteBg) deleteBg.style.opacity = '0';
     }
     currentX = 0;
   });
@@ -620,7 +644,7 @@ function deleteWorkout(id) {
           workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
           updateStats();
           renderHistory();
-          toast('Failed to delete from cloud — restored.');
+          toast('Failed to delete from cloud. Restored.');
         }
       }, 5000);
 
@@ -638,11 +662,16 @@ function deleteWorkout(id) {
 }
 
 function openRestDayModal() {
-  document.getElementById('restTypeOverlay').classList.add('active');
+  const overlay = document.getElementById('restTypeOverlay');
+  overlay.classList.add('active');
+  lockBodyScroll();
+  _gsapOpenOverlay(overlay);
 }
 
 function dismissRestTypeModal() {
-  document.getElementById('restTypeOverlay').classList.remove('active');
+  const overlay = document.getElementById('restTypeOverlay');
+  unlockBodyScroll();
+  _gsapCloseOverlay(overlay, () => overlay.classList.remove('active'));
 }
 
 async function logRestDay(restType) {
@@ -708,7 +737,7 @@ function removeRestDay(date) {
           renderHistory();
           renderProgress();
           renderHeatmap();
-          toast('Failed to remove from cloud — restored.');
+          toast('Failed to remove from cloud. Restored.');
         }
       }, 5000);
 
@@ -839,10 +868,12 @@ function showRecap(workout, isVolumePR) {
   if (isVolumePR) toast('🔥 NEW ALL-TIME VOLUME PR!');
 
   document.getElementById('recapOverlay').classList.add('active');
+  lockBodyScroll();
 }
 
 function closeRecap() {
   document.getElementById('recapOverlay').classList.remove('active');
+  unlockBodyScroll();
 }
 
 function closeRecapAndGoHistory() {
@@ -898,22 +929,22 @@ function shareProgress() {
   // Adapt colors based on Light/Dark mode for the poster output
   const isLight = document.body.classList.contains('light-mode');
   const bgGrid = isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.02)';
-  const bgColor = isLight ? '#f2f2f0' : '#050505';
+  const bgColor = isLight ? '#f4f2ee' : '#131211';
   const cardBg = isLight ? 'rgba(255,255,255,0.8)' : 'rgba(20,20,20,0.8)';
-  const textColor = isLight ? '#111' : '#f0f0f0';
+  const textColor = isLight ? '#1c1a16' : '#f2f0ec';
   const mutedColor = isLight ? '#777' : '#888';
   const borderColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
 
   node.innerHTML = `
-    <div class="share-content" style="background-color: ${bgColor}; background-image: radial-gradient(circle at 15% 50%, rgba(232,255,71,0.08), transparent 40%), radial-gradient(circle at 85% 30%, rgba(255,107,53,0.08), transparent 40%), linear-gradient(${bgGrid} 1px, transparent 1px), linear-gradient(90deg, ${bgGrid} 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px; padding: 40px; border-radius: 20px;">
+    <div class="share-content" style="background-color: ${bgColor}; background-image: radial-gradient(circle at 15% 50%, rgba(224,138,62,0.08), transparent 40%), radial-gradient(circle at 85% 30%, rgba(201,105,79,0.08), transparent 40%), linear-gradient(${bgGrid} 1px, transparent 1px), linear-gradient(90deg, ${bgGrid} 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px; padding: 40px; border-radius: 20px;">
 
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 30px;">
         <div>
-          <div style="font-family:'Bebas Neue', sans-serif; font-size:3.5rem; letter-spacing:0.08em; color:var(--accent); margin-bottom:5px; line-height:1; text-shadow: 0 0 20px rgba(232,255,71,0.2);">
+          <div style="font-family:'Outfit', sans-serif; font-weight:700; font-size:3.5rem; letter-spacing:0.08em; color:var(--accent); margin-bottom:5px; line-height:1; text-shadow: 0 0 12px rgba(224,138,62,0.22);">
             Ctrl<span style="color:${textColor}">Set</span>
           </div>
-          <div style="font-family:'DM Mono', monospace; font-size:0.85rem; letter-spacing:0.1em; color:${mutedColor}; text-transform:uppercase;">
-            Progress Report — ${escapeHtml(monthLabel)}
+          <div style="font-family:'JetBrains Mono', monospace; font-size:0.85rem; letter-spacing:0.1em; color:${mutedColor}; text-transform:uppercase;">
+            Progress Report: ${escapeHtml(monthLabel)}
           </div>
         </div>
       </div>
@@ -921,27 +952,27 @@ function shareProgress() {
       <div style="display:flex; gap:16px; margin-bottom:30px;">
         <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:16px; padding:20px; flex:1; position:relative; overflow:hidden;">
           <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), transparent);"></div>
-          <div style="font-family:'DM Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:8px;">VOLUME</div>
-          <div style="font-family:'Bebas Neue', sans-serif; font-size:2rem; color:var(--accent); line-height:1;">${Math.round(stats.volume).toLocaleString()} KG</div>
+          <div style="font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:8px;">VOLUME</div>
+          <div style="font-family:'Outfit', sans-serif; font-weight:700; font-size:2rem; color:var(--accent); line-height:1;">${Math.round(stats.volume).toLocaleString()} KG</div>
         </div>
         <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:16px; padding:20px; flex:1; position:relative; overflow:hidden;">
           <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), transparent);"></div>
-          <div style="font-family:'DM Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:8px;">WORKOUTS</div>
-          <div style="font-family:'Bebas Neue', sans-serif; font-size:2rem; color:${textColor}; line-height:1;">${stats.workoutCount}</div>
+          <div style="font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:8px;">WORKOUTS</div>
+          <div style="font-family:'Outfit', sans-serif; font-weight:700; font-size:2rem; color:${textColor}; line-height:1;">${stats.workoutCount}</div>
         </div>
         <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:16px; padding:20px; flex:1; position:relative; overflow:hidden;">
           <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), transparent);"></div>
-          <div style="font-family:'DM Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:8px;">BEST STREAK</div>
-          <div style="font-family:'Bebas Neue', sans-serif; font-size:2rem; color:${textColor}; line-height:1;">${stats.bestStreak}D</div>
+          <div style="font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:8px;">BEST STREAK</div>
+          <div style="font-family:'Outfit', sans-serif; font-weight:700; font-size:2rem; color:${textColor}; line-height:1;">${stats.bestStreak}D</div>
         </div>
       </div>
 
       ${prs.length ? `
       <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:20px; padding:24px; margin-bottom:20px;">
-        <div style="font-family:'DM Mono', monospace; font-size:0.75rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:16px; border-bottom:1px solid ${borderColor}; padding-bottom:12px;">🏆 PRs THIS MONTH</div>
+        <div style="font-family:'JetBrains Mono', monospace; font-size:0.75rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:16px; border-bottom:1px solid ${borderColor}; padding-bottom:12px;">🏆 PRs THIS MONTH</div>
         <div style="display:flex; flex-wrap:wrap; gap:8px;">
           ${prs.map(pr => `
-            <span style="font-family:'DM Mono', monospace; font-size:0.85rem; color:var(--accent); background:rgba(232,255,71,0.1); padding:6px 12px; border-radius:6px; border:1px solid rgba(232,255,71,0.2);">
+            <span style="font-family:'JetBrains Mono', monospace; font-size:0.85rem; color:var(--accent); background:rgba(224,138,62,0.1); padding:6px 12px; border-radius:6px; border:1px solid rgba(224,138,62,0.2);">
               ${escapeHtml(pr.name)} <strong style="font-weight:700;">${pr.weight}kg</strong>
             </span>
           `).join('')}
@@ -949,8 +980,8 @@ function shareProgress() {
       </div>` : ''}
 
       <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:16px; padding:18px 24px; display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-family:'DM Mono', monospace; font-size:0.8rem; letter-spacing:0.05em; color:${mutedColor};">🏅 ACHIEVEMENTS UNLOCKED</span>
-        <span style="font-family:'Bebas Neue', sans-serif; font-size:1.6rem; color:var(--accent);">${unlockedCount}/${achievements.length}</span>
+        <span style="font-family:'JetBrains Mono', monospace; font-size:0.8rem; letter-spacing:0.05em; color:${mutedColor};">🏅 ACHIEVEMENTS UNLOCKED</span>
+        <span style="font-family:'Outfit', sans-serif; font-weight:700; font-size:1.6rem; color:var(--accent);">${unlockedCount}/${achievements.length}</span>
       </div>
     </div>
   `;
@@ -991,56 +1022,56 @@ function shareWorkout(id) {
   // Adapt colors based on Light/Dark mode for the poster output
   const isLight = document.body.classList.contains('light-mode');
   const bgGrid = isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.02)';
-  const bgColor = isLight ? '#f2f2f0' : '#050505';
+  const bgColor = isLight ? '#f4f2ee' : '#131211';
   const cardBg = isLight ? 'rgba(255,255,255,0.8)' : 'rgba(20,20,20,0.8)';
-  const textColor = isLight ? '#111' : '#f0f0f0';
+  const textColor = isLight ? '#1c1a16' : '#f2f0ec';
   const mutedColor = isLight ? '#777' : '#888';
   const borderColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
 
   node.innerHTML = `
-    <div class="share-content" style="background-color: ${bgColor}; background-image: radial-gradient(circle at 15% 50%, rgba(232,255,71,0.08), transparent 40%), radial-gradient(circle at 85% 30%, rgba(255,107,53,0.08), transparent 40%), linear-gradient(${bgGrid} 1px, transparent 1px), linear-gradient(90deg, ${bgGrid} 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px; padding: 40px; border-radius: 20px;">
+    <div class="share-content" style="background-color: ${bgColor}; background-image: radial-gradient(circle at 15% 50%, rgba(224,138,62,0.08), transparent 40%), radial-gradient(circle at 85% 30%, rgba(201,105,79,0.08), transparent 40%), linear-gradient(${bgGrid} 1px, transparent 1px), linear-gradient(90deg, ${bgGrid} 1px, transparent 1px); background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px; padding: 40px; border-radius: 20px;">
       
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 30px;">
         <div>
-          <div style="font-family:'Bebas Neue', sans-serif; font-size:3.5rem; letter-spacing:0.08em; color:var(--accent); margin-bottom:5px; line-height:1; text-shadow: 0 0 20px rgba(232,255,71,0.2);">
+          <div style="font-family:'Outfit', sans-serif; font-weight:700; font-size:3.5rem; letter-spacing:0.08em; color:var(--accent); margin-bottom:5px; line-height:1; text-shadow: 0 0 12px rgba(224,138,62,0.22);">
             Ctrl<span style="color:${textColor}">Set</span>
           </div>
-          <div style="font-family:'DM Mono', monospace; font-size:0.85rem; letter-spacing:0.1em; color:${mutedColor}; text-transform:uppercase;">
+          <div style="font-family:'JetBrains Mono', monospace; font-size:0.85rem; letter-spacing:0.1em; color:${mutedColor}; text-transform:uppercase;">
             ${formatDate(w.date)}
           </div>
         </div>
       </div>
 
-      <div style="font-family:'Bebas Neue', sans-serif; font-size:2.8rem; letter-spacing:0.05em; color:${textColor}; margin-bottom:24px; line-height:1.1;">
+      <div style="font-family:'Outfit', sans-serif; font-weight:700; font-size:2.8rem; letter-spacing:0.05em; color:${textColor}; margin-bottom:24px; line-height:1.1;">
         ${w.name}
       </div>
 
       <div style="display:flex; gap:16px; margin-bottom:30px;">
         <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:16px; padding:20px; flex:1; position:relative; overflow:hidden;">
           <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), transparent);"></div>
-          <div style="font-family:'DM Mono', monospace; font-size:0.75rem; letter-spacing:0.12em; color:${mutedColor}; margin-bottom:8px;">TOTAL VOLUME</div>
-          <div style="font-family:'Bebas Neue', sans-serif; font-size:2.4rem; color:var(--accent); line-height:1;">${Math.round(vol).toLocaleString()} KG</div>
+          <div style="font-family:'JetBrains Mono', monospace; font-size:0.75rem; letter-spacing:0.12em; color:${mutedColor}; margin-bottom:8px;">TOTAL VOLUME</div>
+          <div style="font-family:'Outfit', sans-serif; font-weight:700; font-size:2.4rem; color:var(--accent); line-height:1;">${Math.round(vol).toLocaleString()} KG</div>
         </div>
         ${w.duration ? `
         <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:16px; padding:20px; flex:1; position:relative; overflow:hidden;">
           <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), transparent);"></div>
-          <div style="font-family:'DM Mono', monospace; font-size:0.75rem; letter-spacing:0.12em; color:${mutedColor}; margin-bottom:8px;">DURATION</div>
-          <div style="font-family:'Bebas Neue', sans-serif; font-size:2.4rem; color:${textColor}; line-height:1;">${w.duration} MIN</div>
+          <div style="font-family:'JetBrains Mono', monospace; font-size:0.75rem; letter-spacing:0.12em; color:${mutedColor}; margin-bottom:8px;">DURATION</div>
+          <div style="font-family:'Outfit', sans-serif; font-weight:700; font-size:2.4rem; color:${textColor}; line-height:1;">${w.duration} MIN</div>
         </div>` : ''}
       </div>
 
       <div style="background:${cardBg}; border:1px solid ${borderColor}; border-radius:20px; padding:24px;">
-        <div style="font-family:'DM Mono', monospace; font-size:0.75rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:20px; border-bottom:1px solid ${borderColor}; padding-bottom:12px;">EXERCISES</div>
+        <div style="font-family:'JetBrains Mono', monospace; font-size:0.75rem; letter-spacing:0.1em; color:${mutedColor}; margin-bottom:20px; border-bottom:1px solid ${borderColor}; padding-bottom:12px;">EXERCISES</div>
         
         ${Object.values(grouped).map((group, i, arr) => `
           <div style="margin-bottom:${i === arr.length - 1 ? '0' : '20px'};">
             <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-              <span style="font-size:1.2rem; font-weight:500; color:${textColor}; font-family:'Bebas Neue', sans-serif; letter-spacing:0.04em;">${group.name}</span>
-              ${group.muscle ? `<span style="font-family:'DM Mono', monospace; font-size:0.65rem; color:${mutedColor}; text-transform:uppercase;">${group.muscle}</span>` : ''}
+              <span style="font-size:1.2rem; font-weight:500; color:${textColor}; font-family:'Outfit', sans-serif; font-weight:700; letter-spacing:0.04em;">${group.name}</span>
+              ${group.muscle ? `<span style="font-family:'JetBrains Mono', monospace; font-size:0.65rem; color:${mutedColor}; text-transform:uppercase;">${group.muscle}</span>` : ''}
             </div>
             <div style="display:flex; flex-wrap:wrap; gap:8px;">
               ${group.loads.map(l => `
-                <span style="font-family:'DM Mono', monospace; font-size:0.85rem; color:var(--accent); background:rgba(232,255,71,0.1); padding:4px 10px; border-radius:6px; border:1px solid rgba(232,255,71,0.2);">
+                <span style="font-family:'JetBrains Mono', monospace; font-size:0.85rem; color:var(--accent); background:rgba(224,138,62,0.1); padding:4px 10px; border-radius:6px; border:1px solid rgba(224,138,62,0.2);">
                   ${l.s} × ${l.r} @ <strong style="font-weight:600;">${l.w}kg</strong>
                 </span>
               `).join('')}

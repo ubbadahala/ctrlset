@@ -176,8 +176,8 @@ function showExerciseSuggestions(inputEl, query) {
 
   if (!matches.length) {
     dropdown.innerHTML = q
-      ? `<div class="exercise-suggestion-empty">No match for "${escapeHtml(query.trim())}" — add it in Settings first</div>`
-      : `<div class="exercise-suggestion-empty">No exercises yet — add some in Settings</div>`;
+      ? `<div class="exercise-suggestion-empty">No match for "${escapeHtml(query.trim())}", add it in Settings first</div>`
+      : `<div class="exercise-suggestion-empty">No exercises yet, add some in Settings</div>`;
     dropdown.style.display = 'block';
     return;
   }
@@ -252,7 +252,7 @@ function showExerciseNameWarning(inputEl, val) {
     warn.className = 'exercise-name-warning';
     header.insertAdjacentElement('afterend', warn);
   }
-  warn.innerHTML = `"${escapeHtml(val)}" isn't in your list — <a href="#" onmousedown="event.preventDefault(); goAddExerciseInSettings('${escapeHtml(val).replace(/'/g, "\\'")}')">add it in Settings</a> first`;
+  warn.innerHTML = `"${escapeHtml(val)}" isn't in your list. <a href="#" onmousedown="event.preventDefault(); goAddExerciseInSettings('${escapeHtml(val).replace(/'/g, "\\'")}')">add it in Settings</a> first`;
 }
 
 function clearExerciseNameWarning(inputEl) {
@@ -287,13 +287,16 @@ function clearInjuryWarning(inputEl) {
 function goAddExerciseInSettings(name) {
   const settingsTabBtn = document.querySelector('.tab[onclick*="settings"]');
   switchTab('settings', settingsTabBtn);
+  // switchTab() now animates via a GSAP timeline (2 x 0.18s = 360ms total)
+  // instead of switching instantly, so this needs to wait past that or
+  // the field won't be visible/focusable yet.
   setTimeout(() => {
     const input = document.getElementById('newExerciseInput');
     if (!input) return;
     input.value = name;
     input.scrollIntoView({ behavior: 'smooth', block: 'center' });
     input.focus();
-  }, 100);
+  }, 380);
 }
 
 function logSetLoad(bid, lid) {
@@ -401,7 +404,7 @@ function predictLoadBlock(bid, lid) {
   if (stagnant) {
     suggestion = Math.floor((last.weight * 0.9) * 2) / 2;
     statusMsg = `⚠️ Stagnation detected. Deloading to ${suggestion}kg.`;
-    statusColor = '#ffb347';
+    statusColor = 'var(--warning)';
   } else if (last.reps >= 8) {
     const isLeg = last.muscle === 'Legs' ||
       ['legs','quads','glutes','hamstrings','squat','leg press','calf'].some(m => name.toLowerCase().includes(m));
@@ -416,7 +419,7 @@ function predictLoadBlock(bid, lid) {
   weightInput.value = suggestion;
   updateDeltaLoad(bid, lid);
   weightInput.animate([
-    { boxShadow: `0 0 20px ${statusColor}`, transform: 'scale(1.05)' },
+    { boxShadow: `0 0 8px ${statusColor}`, transform: 'scale(1.05)' },
     { boxShadow: 'none', transform: 'scale(1)' }
   ], { duration: 500, easing: 'ease-out' });
   toast(statusMsg);
@@ -455,11 +458,16 @@ function openRepeatWorkoutModal() {
 
   document.getElementById('repeatWorkoutPicker').innerHTML =
     names.map(n => `<option value="${n}">${n}</option>`).join('');
-  document.getElementById('repeatWorkoutOverlay').classList.add('active');
+  const overlay = document.getElementById('repeatWorkoutOverlay');
+  overlay.classList.add('active');
+  lockBodyScroll();
+  _gsapOpenOverlay(overlay);
 }
 
 function dismissRepeatWorkoutModal() {
-  document.getElementById('repeatWorkoutOverlay').classList.remove('active');
+  const overlay = document.getElementById('repeatWorkoutOverlay');
+  unlockBodyScroll();
+  _gsapCloseOverlay(overlay, () => overlay.classList.remove('active'));
 }
 
 function loadRepeatWorkout() {
@@ -498,7 +506,7 @@ function loadRepeatWorkout() {
     });
 
     dismissRepeatWorkoutModal();
-    toast(`Loaded "${source.name}" — set today's weights 💪`);
+    toast(`Loaded "${source.name}", set today's weights 💪`);
   };
 
   dismissRepeatWorkoutModal();
